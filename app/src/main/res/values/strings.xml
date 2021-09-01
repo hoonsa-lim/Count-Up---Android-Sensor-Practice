@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">HomeTrainingAutoCounter</string>
+    <string name="home">Home</string>
+    <string name="calender">Calender</string>
+    <string name="chart">Chart</string>
+    <string name="setting">Setting</string>
+    <string name="select_exercise">Select Exercise</string>
+    <string name="ranking">Ranking</string>
+    <string name="services_preparing">Services Preparing</string>
+    <string name="ok">Ok</string>
+    <string name="no">No</string>
+    <string name="title">Title</string>
+    <string name="description">Description</string>
+    <string name="exercise_push_up">Push up</string>
+    <string name="exercise_squat">Squat</string>
+    <string name="exercise_chin_up">Chin up / Pull up</string>
+    <string name="exercise_sit_up">Sit up</string>
+    <string name="exercise_plank">Plank</string>
+
+    <string name="exercise_desc_push_up">팔굽혀펴기 설명입니다.팔굽혀펴기 설명입니다.팔굽혀펴기 설명입니다.팔굽혀펴기 설명입니다.</string>
+    <string name="exercise_desc_squat">스쿼트 설명입니다스쿼트 설명입니다스쿼트 설명입니다스쿼트 설명입니다스쿼트 설명입니다스쿼트 설명입니다스쿼트 설명입니다스쿼트 설명입니다스쿼트 설명입니다</string>
+    <string name="exercise_desc_chin_up">턱걸이 설명입니다.턱걸이 설명입니다.턱걸이 설명입니다.턱걸이 설명입니다.턱걸이 설명입니다.턱걸이 설명입니다.턱걸이 설명입니다.턱걸이 설명입니다.</string>
+    <string name="exercise_desc_sit_up">윗몸일으키기설명입니다.윗몸일으키기설명입니다.윗몸일으키기설명입니다.윗몸일으키기설명입니다.윗몸일으키기설명입니다.윗몸일으키기설명입니다.</string>
+    <string name="exercise_desc_plank">플랭크 설명입니다.플랭크 설명입니다.플랭크 설명입니다.플랭크 설명입니다.플랭크 설명입니다.플랭크 설명입니다.플랭크 설명입니다.</string>
+
+
+</resources>

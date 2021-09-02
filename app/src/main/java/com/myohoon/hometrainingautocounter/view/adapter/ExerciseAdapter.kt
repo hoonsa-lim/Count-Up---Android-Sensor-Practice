@@ -44,23 +44,25 @@ class ExerciseAdapter(
             binding.num = if (position <= 10) "0$position" else position.toString()
 
             binding.clExerciseItem.setOnClickListener {
+
                 showAlertExerciseInfo(item, it.context)
             }
-            binding.ibExerciseInfo.setOnClickListener {
-                showAlertExerciseInfo(item, it.context)
-            }
+            binding.ibExerciseInfo.setOnClickListener { showAlertExerciseInfo(item, it.context, true) }
         }
 
-        private fun showAlertExerciseInfo(exercise: Exercise, context: Context){
+        private fun showAlertExerciseInfo(exercise: Exercise, context: Context, isOneBtn:Boolean = false){
             val alert = MyAlert(
                 context.getString(exercise.title),
                 context.getString(exercise.desc),
                 R.drawable.test,
-                isOneButton = false,
-                btnPositiveText = "안녕",
-                btnNegativeText = "반가워",
-                {Toast.makeText(context, "1111", Toast.LENGTH_SHORT).show()},
-                {Toast.makeText(context, "22222", Toast.LENGTH_SHORT).show()}
+                isOneButton = isOneBtn,
+                btnNegativeText = context.getString(R.string.dont_show_again),
+                positiveEvent = {
+                    Toast.makeText(context, "1111", Toast.LENGTH_SHORT).show()
+                },
+                negativeEvent = {
+                    Toast.makeText(context, "22222", Toast.LENGTH_SHORT).show()
+                }
             )
             AlertUtils.instance().show(context, alert)
         }

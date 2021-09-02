@@ -26,7 +26,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/clExerciseItem"
             android:layout_width="match_parent"
-            android:layout_height="100dp">
+            android:layout_height="70dp">
 
             <TextView
                 android:id="@+id/textView"
@@ -34,7 +34,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="@dimen/item_margin"
                 android:background="@drawable/textview_circle"
-                android:padding="10dp"
+                android:padding="7dp"
                 android:text="@{num}"
                 android:textColor="@color/white"
                 android:textStyle="bold"
@@ -45,11 +45,11 @@
 
             <TextView
                 android:id="@+id/textView2"
+                strRes="@{item.title}"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="@dimen/item_margin"
                 android:maxLines="2"
-                strRes="@{item.title}"
                 android:textSize="@dimen/body0"
                 android:textStyle="bold"
                 card_view:layout_constraintBottom_toBottomOf="parent"

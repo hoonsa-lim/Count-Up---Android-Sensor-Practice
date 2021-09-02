@@ -2,7 +2,9 @@ package com.myohoon.hometrainingautocounter.view
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
@@ -24,18 +26,68 @@ import com.myohoon.hometrainingautocounter.view.fragment.setting.SettingFragment
 class MainActivity : AppCompatActivity() {
     companion object{
         const val TAG = "MainActivity"
-        private const val NUM_PAGES = 5
+
+        private const val NUM_PAGES = 5         //하단 탭 수
+
+        private var mainActivity: MainActivity? = null
+
+        fun showBottomTab(isShow:Boolean){
+            mainActivity?.let {
+                it.binding.tabLayout.visibility =
+                    if (isShow) View.VISIBLE
+                    else View.GONE
+            }
+        }
+
+//        fun showProgressBar(b: Boolean) {
+//            mActivity?.let { it.binding?.let { it.clPB?.let { clPb ->
+//                if (b) {
+//                    clPb.visibility = View.VISIBLE
+//                    mActivity!!.window.setFlags(
+//                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+//                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+//                    )
+//                } else {
+//                    clPb.visibility = View.GONE
+//                    mActivity!!.window.clearFlags(
+//                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+//                    )
+//                }
+//            } } }
+//        }
+
+        fun addFragmentInMain(fragment: Fragment, backStack:String? = null) {
+            mainActivity?.let {
+                it.supportFragmentManager
+                    .beginTransaction()
+                    .add(R.id.mainFrame, fragment)
+                    .addToBackStack(backStack)
+                    .commit()
+            }
+        }
     }
     //view
     private lateinit var binding : ActivityMainBinding
 
+    //back press
+    private var mBackWait = 0L
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        //dark mode
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+
+        //Fragment 변경, 하단 탭 숨김, 프로그레스 등에 사용
+        mainActivity = this
+
+        //view
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         binding.pager.adapter = ScreenSlidePagerAdapter(this)
 
+        //init tab navigation bar
         initTabLayout()
+
+
     }
 
     private fun initTabLayout() {
@@ -78,11 +130,44 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (binding.pager.currentItem == 0) {
-            super.onBackPressed()
-        } else {
-            binding.pager.currentItem = binding.pager.currentItem - 1
+        val count = supportFragmentManager.fragments.count()
+        var name = supportFragmentManager.fragments.last()::class.java.simpleName
+        if (name == "SupportRequestManagerFragment")
+            supportFragmentManager.fragments[count-2]?.let {
+                name = it::class.java.simpleName
+            }
+
+        Log.d(TAG, "onBackPressed: count == $count")
+        Log.d(TAG, "onBackPressed: name == $name")
+
+//        //하단 네비게이션 바가 표시되는 곳은 프레그먼트 하나만 있을 때
+//        if (count <= 2) showBNV(true)
+//        else showBNV(false)
+//
+        when(name){
+            CalenderFragment.TAG, GraphFragment.TAG,
+            MainFragment.TAG, RankingFragment.TAG, SettingFragment.TAG -> {
+                if((System.currentTimeMillis()-mBackWait) >= 2000){
+                    Toast.makeText(applicationContext, getString(R.string.back_pressed_description), Toast.LENGTH_SHORT).show()
+                    mBackWait = System.currentTimeMillis()
+                } else {
+                    moveTaskToBack(true)
+                    finishAndRemoveTask()
+                    System.exit(0)
+                }
+            }
+            else -> super.onBackPressed()
         }
+//
+//        //키보드 hide
+//        FunctionUtils.dismissKeyboard(this)
+
+
+//        if (binding.pager.currentItem == 0) {
+//            super.onBackPressed()
+//        } else {
+//            binding.pager.currentItem = binding.pager.currentItem - 1
+//        }
     }
 
     private inner class ScreenSlidePagerAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {

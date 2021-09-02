@@ -8,7 +8,9 @@ import android.view.ViewGroup
 import com.myohoon.hometrainingautocounter.R
 
 class RankingFragment : Fragment() {
-
+    companion object{
+        const val TAG = "RankingFragment"
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?

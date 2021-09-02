@@ -12,6 +12,8 @@ import com.myohoon.hometrainingautocounter.databinding.ItemExerciseBinding
 import com.myohoon.hometrainingautocounter.repository.enums.Exercise
 import com.myohoon.hometrainingautocounter.repository.model.MyAlert
 import com.myohoon.hometrainingautocounter.utils.AlertUtils
+import com.myohoon.hometrainingautocounter.view.MainActivity
+import com.myohoon.hometrainingautocounter.view.fragment.main.GoalsSettingFragment
 
 class ExerciseAdapter(
     private val obsList : ObservableField<List<Exercise>>
@@ -44,26 +46,52 @@ class ExerciseAdapter(
             binding.num = if (position <= 10) "0$position" else position.toString()
 
             binding.clExerciseItem.setOnClickListener {
-
-                showAlertExerciseInfo(item, it.context)
+                if (false)
+                    addPageFragment()
+                else{
+                    showAlertExerciseInfo(
+                        makeExerciseAlert(it.context, item, {
+                            addPageFragment()
+                        },{
+                            Toast.makeText(it.context, "다음에 보지 않기", Toast.LENGTH_SHORT).show()
+                        },R.string.start),
+                        it.context
+                    )
+                }
             }
-            binding.ibExerciseInfo.setOnClickListener { showAlertExerciseInfo(item, it.context, true) }
+            binding.ibExerciseInfo.setOnClickListener {
+                showAlertExerciseInfo(
+                    makeExerciseAlert(it.context, item, {},{}, isOneBtn = true),
+                    it.context
+                )
+            }
         }
 
-        private fun showAlertExerciseInfo(exercise: Exercise, context: Context, isOneBtn:Boolean = false){
-            val alert = MyAlert(
+        private fun addPageFragment() {
+            MainActivity.addFragmentInMain(GoalsSettingFragment(), GoalsSettingFragment.TAG)
+        }
+
+        private fun makeExerciseAlert(
+            context: Context,
+            exercise: Exercise,
+            f1: () -> Unit, f2: () -> Unit,
+            btnPositiveText: Int? = null,
+            isOneBtn: Boolean = false
+        ): MyAlert {
+
+             val alert = MyAlert(
                 context.getString(exercise.title),
                 context.getString(exercise.desc),
-                R.drawable.test,
+                exercise.img,
                 isOneButton = isOneBtn,
+                btnPositiveText = if (btnPositiveText != null) context.getString(btnPositiveText) else null,
                 btnNegativeText = context.getString(R.string.dont_show_again),
-                positiveEvent = {
-                    Toast.makeText(context, "1111", Toast.LENGTH_SHORT).show()
-                },
-                negativeEvent = {
-                    Toast.makeText(context, "22222", Toast.LENGTH_SHORT).show()
-                }
+                positiveEvent = f1, negativeEvent = f2
             )
+            return alert
+        }
+
+        private fun showAlertExerciseInfo(alert: MyAlert, context: Context){
             AlertUtils.instance().show(context, alert)
         }
     }

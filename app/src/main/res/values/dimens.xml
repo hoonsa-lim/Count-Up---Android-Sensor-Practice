@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!--    text size   -->
+    <dimen name="h0">60sp</dimen>
     <dimen name="h1">40sp</dimen>
     <dimen name="h2">32sp</dimen>
     <dimen name="h3">28sp</dimen>
@@ -22,4 +23,6 @@
     <dimen name="basic_side_margin">16dp</dimen>
     <dimen name="title_margin_top">32dp</dimen>
     <dimen name="title_margin_bottom">32dp</dimen>
+    <dimen name="basic_radius">40dp</dimen>
+    <dimen name="icon_padding">10dp</dimen>
 </resources>

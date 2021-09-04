@@ -1,7 +1,6 @@
 package com.myohoon.hometrainingautocounter.view.adapter
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Toast
@@ -9,14 +8,14 @@ import androidx.databinding.ObservableField
 import androidx.recyclerview.widget.RecyclerView
 import com.myohoon.hometrainingautocounter.R
 import com.myohoon.hometrainingautocounter.databinding.ItemExerciseBinding
-import com.myohoon.hometrainingautocounter.repository.enums.Exercise
+import com.myohoon.hometrainingautocounter.repository.enums.ExerciseType
 import com.myohoon.hometrainingautocounter.repository.model.MyAlert
 import com.myohoon.hometrainingautocounter.utils.AlertUtils
 import com.myohoon.hometrainingautocounter.view.MainActivity
 import com.myohoon.hometrainingautocounter.view.fragment.main.GoalsSettingFragment
 
 class ExerciseAdapter(
-    private val obsList : ObservableField<List<Exercise>>
+    private val obsList : ObservableField<List<ExerciseType>>
 ): RecyclerView.Adapter<ExerciseAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -40,7 +39,7 @@ class ExerciseAdapter(
             const val TAG = "ViewHolder"
         }
 
-        fun bind(item: Exercise){
+        fun bind(item: ExerciseType){
             val position = this.adapterPosition +1
             binding.item = item
             binding.num = if (position <= 10) "0$position" else position.toString()
@@ -73,16 +72,16 @@ class ExerciseAdapter(
 
         private fun makeExerciseAlert(
             context: Context,
-            exercise: Exercise,
+            exerciseType: ExerciseType,
             f1: () -> Unit, f2: () -> Unit,
             btnPositiveText: Int? = null,
             isOneBtn: Boolean = false
         ): MyAlert {
 
              val alert = MyAlert(
-                context.getString(exercise.title),
-                context.getString(exercise.desc),
-                exercise.img,
+                context.getString(exerciseType.title),
+                context.getString(exerciseType.desc),
+                exerciseType.img,
                 isOneButton = isOneBtn,
                 btnPositiveText = if (btnPositiveText != null) context.getString(btnPositiveText) else null,
                 btnNegativeText = context.getString(R.string.dont_show_again),

@@ -12,6 +12,7 @@ import com.myohoon.hometrainingautocounter.databinding.FragmentGoalsSettingBindi
 import com.myohoon.hometrainingautocounter.databinding.FragmentMainBinding
 import com.myohoon.hometrainingautocounter.view.MainActivity
 import com.myohoon.hometrainingautocounter.view.adapter.ExerciseAdapter
+import com.myohoon.hometrainingautocounter.view.adapter.GoalsSettingAdapter
 import com.myohoon.hometrainingautocounter.viewmodel.ExerciseViewModel
 
 class GoalsSettingFragment : Fragment() {
@@ -35,9 +36,14 @@ class GoalsSettingFragment : Fragment() {
         //view
         _binding = FragmentGoalsSettingBinding.inflate(inflater, container, false)
         binding.exerciseVM = exerciseVM
-
+        initListAdapter()
         initObservableCallback()
         return binding.root
+    }
+
+    private fun initListAdapter() {
+        //운동 목록 초기화
+        binding.rcvGoalsSetting.adapter = GoalsSettingAdapter(exerciseVM.goalsTypes)
     }
 
     private fun initObservableCallback() {

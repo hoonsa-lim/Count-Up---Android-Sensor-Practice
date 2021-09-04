@@ -30,4 +30,8 @@
     <string name="finish">Finish</string>
     <string name="rest">Rest</string>
     <string name="log">Log</string>
+    <string name="sets">Sets</string>
+    <string name="reps">Reps</string>
+    <string name="time_limit_per_set">Time limit per set</string>
+    <string name="time_rest">Time Rest</string>
 </resources>

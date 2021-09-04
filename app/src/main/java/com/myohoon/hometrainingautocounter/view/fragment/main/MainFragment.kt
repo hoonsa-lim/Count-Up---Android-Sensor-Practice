@@ -1,11 +1,14 @@
 package com.myohoon.hometrainingautocounter.view.fragment.main
 
+import android.app.Application
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.myohoon.hometrainingautocounter.R
 import com.myohoon.hometrainingautocounter.databinding.FragmentMainBinding
 import com.myohoon.hometrainingautocounter.view.adapter.ExerciseAdapter

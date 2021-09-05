@@ -34,4 +34,7 @@
     <string name="reps">Reps</string>
     <string name="time_limit_per_set">Time limit per set</string>
     <string name="time_rest">Time Rest</string>
+    <string name="unknown">Unknown</string>
+    <string name="unit_set">set</string>
+    <string name="unit_count">count</string>
 </resources>

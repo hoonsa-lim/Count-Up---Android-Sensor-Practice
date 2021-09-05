@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -22,6 +23,7 @@ import com.myohoon.hometrainingautocounter.view.fragment.graph.GraphFragment
 import com.myohoon.hometrainingautocounter.view.fragment.main.MainFragment
 import com.myohoon.hometrainingautocounter.view.fragment.ranking.RankingFragment
 import com.myohoon.hometrainingautocounter.view.fragment.setting.SettingFragment
+import com.myohoon.hometrainingautocounter.viewmodel.ExerciseViewModel
 
 class MainActivity : AppCompatActivity() {
     companion object{
@@ -72,6 +74,9 @@ class MainActivity : AppCompatActivity() {
     //back press
     private var mBackWait = 0L
 
+    //viewModel
+    private val exerciseVM by viewModels<ExerciseViewModel>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //dark mode
@@ -80,14 +85,15 @@ class MainActivity : AppCompatActivity() {
         //Fragment 변경, 하단 탭 숨김, 프로그레스 등에 사용
         mainActivity = this
 
+        //initDB
+        exerciseVM.initRoomDB(applicationContext, "test_db_name")
+
         //view
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         binding.pager.adapter = ScreenSlidePagerAdapter(this)
 
         //init tab navigation bar
         initTabLayout()
-
-
     }
 
     private fun initTabLayout() {

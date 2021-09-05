@@ -4,8 +4,8 @@
     xmlns:card_view="http://schemas.android.com/apk/res-auto">
     <data>
         <variable
-            name="item"
-            type="com.myohoon.hometrainingautocounter.repository.enums.ExerciseType" />
+            name="title"
+            type="Integer" />
         <variable
             name="num"
             type="String" />
@@ -45,7 +45,7 @@
 
             <TextView
                 android:id="@+id/textView2"
-                strRes="@{item.title}"
+                strRes="@{title}"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="@dimen/item_margin"

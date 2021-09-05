@@ -10,7 +10,7 @@ import com.myohoon.hometrainingautocounter.R
 object ImageResourceBindingAdapter {
     @BindingAdapter(value = ["imageRes"])
     @JvmStatic
-    fun loadImage(imageView : ImageView, resId : Int){
+    fun setImgResource(imageView : ImageView, resId : Int){
         Glide.with(imageView.context)
             .load(resId)
             .placeholder(R.color.gray_100)
@@ -22,7 +22,7 @@ object ImageResourceBindingAdapter {
 object StrResourceBindingAdapter {
     @BindingAdapter(value = ["strRes"])
     @JvmStatic
-    fun loadImage(tv : TextView, resId : Int){
+    fun setTextResource(tv : TextView, resId : Int){
         tv.setText(resId)
     }
 }

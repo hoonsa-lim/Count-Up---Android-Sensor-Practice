@@ -6,11 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import com.myohoon.hometrainingautocounter.R
 import com.myohoon.hometrainingautocounter.databinding.FragmentCountBinding
-import com.myohoon.hometrainingautocounter.databinding.FragmentGoalsSettingBinding
-import com.myohoon.hometrainingautocounter.databinding.FragmentMainBinding
-import com.myohoon.hometrainingautocounter.view.adapter.ExerciseAdapter
 import com.myohoon.hometrainingautocounter.viewmodel.ExerciseViewModel
 
 class CountFragment : Fragment() {

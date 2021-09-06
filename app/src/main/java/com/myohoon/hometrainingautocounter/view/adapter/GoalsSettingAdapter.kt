@@ -12,7 +12,9 @@ import com.myohoon.hometrainingautocounter.R
 import com.myohoon.hometrainingautocounter.databinding.ItemGoalsSettingBinding
 import com.myohoon.hometrainingautocounter.repository.entity.Goal
 import com.myohoon.hometrainingautocounter.repository.enums.GoalsSettingType
+import com.myohoon.hometrainingautocounter.utils.AlertUtils
 import com.myohoon.hometrainingautocounter.utils.ResUtils
+import com.myohoon.hometrainingautocounter.utils.TimeUtils
 import com.myohoon.hometrainingautocounter.viewmodel.ExerciseViewModel
 
 class GoalsSettingAdapter(
@@ -62,7 +64,15 @@ class GoalsSettingAdapter(
                 true
             }
             binding.clExerciseItem.setOnClickListener {
-
+                if (!item.isActive){
+                    item.isActive = true
+                    exerciseVM.updateGoal(item)
+                }
+            }
+            binding.tvItemNum.setOnClickListener {
+                AlertUtils.instance().showGoalSetting(it.context, item) {
+                    updateCount(it, item, exerciseVM)
+                }
             }
             binding.ibInfo.setOnClickListener {
 
@@ -71,7 +81,7 @@ class GoalsSettingAdapter(
         private fun preprocess(item: Goal): String{
             return when(item.goalId.split("_").last()){
                 "0", "1" -> item.lastGoalsValue
-                "2", "3" -> if (item.lastGoalsValue == "0") "00:00" else item.lastGoalsValue
+                "2", "3" -> if (item.lastGoalsValue == "0") "00:00" else TimeUtils.secToFormatTime(item.lastGoalsValue.toInt())
                 else -> ""
             }
         }
@@ -81,6 +91,20 @@ class GoalsSettingAdapter(
                 "0" -> " ${context.getString(R.string.unit_set)}"
                 "1" -> " ${context.getString(R.string.unit_count)}"
                 else -> ""
+            }
+        }
+
+        private fun updateCount(count:String, item:Goal, exerciseVM: ExerciseViewModel){
+            when(item.goalId.split("_").last()){
+                "0", "1" -> {   //숫자
+                    if ((count.toInt()?:0) < 0) return
+                    item.lastGoalsValue = count
+                    exerciseVM.updateGoal(item)
+                }
+                "2", "3" -> {       //시간
+                    item.lastGoalsValue = TimeUtils.formatTimeToSec(count).toString()
+                    exerciseVM.updateGoal(item)
+                }
             }
         }
     }

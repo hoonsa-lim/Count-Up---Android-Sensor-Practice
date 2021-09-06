@@ -37,4 +37,8 @@
     <string name="unknown">Unknown</string>
     <string name="unit_set">set</string>
     <string name="unit_count">count</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="sec">sec</string>
+    <string name="min">min</string>
 </resources>

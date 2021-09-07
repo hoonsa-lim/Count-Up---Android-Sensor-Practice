@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools">
     <data>
         <variable
-            name="exerciseVM"
-            type="com.myohoon.hometrainingautocounter.viewmodel.ExerciseViewModel" />
+            name="fg"
+            type="com.myohoon.hometrainingautocounter.view.fragment.main.GoalsSettingFragment" />
     </data>
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -49,11 +49,11 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/basic_side_margin"
-                android:onClick="@{exerciseVM::btnStartExerciseClicked}"
+                android:onClick="@{fg::btnStartExerciseClicked}"
                 android:text="@string/start"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/btnNoGoals"
+                app:layout_constraintStart_toStartOf="@+id/guideline3"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <Button
@@ -63,6 +63,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/basic_side_margin"
                 android:text="@string/no_goals"
+                android:onClick="@{fg::btnStartExerciseClicked}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/guideline3"
                 app:layout_constraintStart_toStartOf="parent"

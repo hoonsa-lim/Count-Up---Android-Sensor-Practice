@@ -9,6 +9,8 @@ import com.myohoon.hometrainingautocounter.repository.dao.ExerciseDao
 import com.myohoon.hometrainingautocounter.repository.dao.GoalsSettingDao
 import com.myohoon.hometrainingautocounter.repository.entity.ExerciseEntity
 import com.myohoon.hometrainingautocounter.repository.entity.Goal
+import com.myohoon.hometrainingautocounter.repository.enums.ExerciseType
+import com.myohoon.hometrainingautocounter.repository.enums.GoalsSettingType
 
 @Database(entities = [ExerciseEntity::class, Goal::class], version = 1)
 abstract class AppDB : RoomDatabase() {
@@ -17,8 +19,8 @@ abstract class AppDB : RoomDatabase() {
 
     companion object{
         private var appDB: AppDB? = null
-        val exercises = listOf("PushUp","Squat","ChinUp","SitUp","Plank", )
-        val goals = listOf("Sets","Reps","TimeLimitPerSet","TimeRest", )
+        val exercises = enumValues<ExerciseType>()
+        val goals = enumValues<GoalsSettingType>()
 
         fun instance(context: Context, uId: String): AppDB{
             if (appDB == null) appDB = Room
@@ -28,11 +30,11 @@ abstract class AppDB : RoomDatabase() {
                         super.onCreate(db)
                         //exercise 테이블 초기값
                         exercises.forEachIndexed { i, v ->
-                            db.execSQL("insert into exercise values ($i, '$v', 'true');")
+                            db.execSQL("insert into exercise values ($i, '${v.title}', 'true');")
 
                             //goals 테이블 초기값
-                            goals.forEachIndexed { i1, v1 ->
-                                db.execSQL("insert into goals_setting values ('${i}_${i1}', $i, 0, '0');")
+                            goals.forEachIndexed { j, v1 ->
+                                db.execSQL("insert into goals_setting values ('${i}_${j}', $i, 0, '0');")
                             }
                         }
                     }

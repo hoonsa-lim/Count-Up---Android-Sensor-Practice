@@ -4,8 +4,8 @@ import com.myohoon.hometrainingautocounter.R
 
 class ResUtils {
     companion object{
-
         //운동 명
+        @JvmStatic
         fun getResExerciseName(eId: Int): Int {
             return when(eId){
                 0 -> R.string.exercise_push_up

@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.Observable
 import androidx.fragment.app.activityViewModels
+import com.myohoon.hometrainingautocounter.R
 import com.myohoon.hometrainingautocounter.databinding.FragmentGoalsSettingBinding
 import com.myohoon.hometrainingautocounter.repository.AppDB
 import com.myohoon.hometrainingautocounter.utils.ResUtils
@@ -38,8 +39,7 @@ class GoalsSettingFragment : Fragment() {
     ): View? {
         //view
         _binding = FragmentGoalsSettingBinding.inflate(inflater, container, false)
-        binding.exerciseVM = exerciseVM
-
+        binding.fg = this
 
         exerciseVM.currentExercise.get()?.let {
             //운동 제목 세팅
@@ -51,6 +51,10 @@ class GoalsSettingFragment : Fragment() {
 
         initObservableCallback()
         return binding.root
+    }
+
+    fun btnStartExerciseClicked(view:View) {
+        exerciseVM.btnStartExerciseClicked(view.id == R.id.btnStart)
     }
 
     private fun initListAdapter() {

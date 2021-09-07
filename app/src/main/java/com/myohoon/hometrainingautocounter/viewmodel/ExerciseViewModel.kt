@@ -6,10 +6,12 @@ import android.view.View
 import androidx.databinding.Observable
 import androidx.databinding.ObservableBoolean
 import androidx.databinding.ObservableField
+import androidx.databinding.ObservableInt
 import androidx.lifecycle.ViewModel
 import com.myohoon.hometrainingautocounter.repository.AppDB
 import com.myohoon.hometrainingautocounter.repository.entity.ExerciseEntity
 import com.myohoon.hometrainingautocounter.repository.entity.Goal
+import com.myohoon.hometrainingautocounter.repository.model.ExerciseLog
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -26,10 +28,17 @@ class ExerciseViewModel: ViewModel() {
     private val disposeBag = CompositeDisposable()
 
     //data
-    val currentExercise = ObservableField<ExerciseEntity>()
-    val exerciseList = ObservableField(mutableListOf<ExerciseEntity>())                             //운동 목록
     private val totalGoals = ObservableField(mutableListOf<Goal>())                               // 목표의 배열
+    val currentExercise = ObservableField<ExerciseEntity>()
     val currentGoals = ObservableField(mutableListOf<Goal>())
+    val exerciseList = ObservableField(mutableListOf<ExerciseEntity>())                             //운동 목록
+    val isSetGoals = ObservableBoolean(false)                                               //목표 설정 여부 목표 없이 운동하냐/ 설정 후 운동 하냐
+
+    //count fragment data
+    val currentSets = ObservableField("0")
+    val currentReps = ObservableField("0")
+    val currentTimeLimit = ObservableField("00:00")
+    val logs = ObservableField<MutableList<ExerciseLog>>()
 
     //callback
     private val totalCB = object : Observable.OnPropertyChangedCallback() {
@@ -64,7 +73,8 @@ class ExerciseViewModel: ViewModel() {
         getGoals()
     }
 
-    fun btnStartExerciseClicked(view: View){
+    fun btnStartExerciseClicked(isSetGoals:Boolean){
+        this.isSetGoals.set(isSetGoals)
         goCountFragment.set(true)
     }
 

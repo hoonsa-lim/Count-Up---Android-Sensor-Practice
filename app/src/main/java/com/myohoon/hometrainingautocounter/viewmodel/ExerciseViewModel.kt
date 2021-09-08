@@ -11,6 +11,8 @@ import androidx.lifecycle.ViewModel
 import com.myohoon.hometrainingautocounter.repository.AppDB
 import com.myohoon.hometrainingautocounter.repository.entity.ExerciseEntity
 import com.myohoon.hometrainingautocounter.repository.entity.Goal
+import com.myohoon.hometrainingautocounter.repository.enums.ExerciseType
+import com.myohoon.hometrainingautocounter.repository.enums.GoalsSettingType
 import com.myohoon.hometrainingautocounter.repository.model.ExerciseLog
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -131,6 +133,11 @@ class ExerciseViewModel: ViewModel() {
             currentExercise.get()?.let { e ->
                 val l = list.filter { it.eId == e.eId }.toMutableList()
                 l.sortBy { it.goalId }
+
+                //플랭크의 경우 개수 사용 안하기 때문에 삭제함.
+                if (e.eId == ExerciseType.PLANK.ordinal){
+                    l.removeAt(GoalsSettingType.REPS.ordinal)
+                }
                 currentGoals.set(l)
             }
         }

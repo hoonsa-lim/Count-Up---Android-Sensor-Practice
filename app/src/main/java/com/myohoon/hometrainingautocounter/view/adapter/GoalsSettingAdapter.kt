@@ -29,7 +29,6 @@ class GoalsSettingAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         list.get()?.let { holder.bind(it[position]) }
-
     }
 
     override fun getItemCount(): Int = if (list.get() == null) 0 else list.get()!!.size
@@ -70,8 +69,10 @@ class GoalsSettingAdapter(
                 }
             }
             binding.tvItemNum.setOnClickListener {
-                AlertUtils.instance().showGoalSetting(it.context, item) {
-                    updateCount(it, item, exerciseVM)
+                if (item.isActive){
+                    AlertUtils.instance().showGoalSetting(it.context, item) {
+                        updateCount(it, item, exerciseVM)
+                    }
                 }
             }
             binding.ibInfo.setOnClickListener {
@@ -79,29 +80,36 @@ class GoalsSettingAdapter(
             }
         }
         private fun preprocess(item: Goal): String{
-            return when(item.goalId.split("_").last()){
-                "0", "1" -> item.lastGoalsValue
-                "2", "3" -> if (item.lastGoalsValue == "0") "00:00" else TimeUtils.secToFormatTime(item.lastGoalsValue.toInt())
+            return when(item.goalId.split("_").last().toInt()){
+                GoalsSettingType.SETS.ordinal,
+                GoalsSettingType.REPS.ordinal -> item.lastGoalsValue
+
+                GoalsSettingType.TIME_LIMIT_PER_SET.ordinal,
+                GoalsSettingType.TIME_REST.ordinal ->
+                    if (item.lastGoalsValue == "0") "00:00"
+                    else TimeUtils.secToFormatTime(item.lastGoalsValue.toInt())
                 else -> ""
             }
         }
 
         private fun getUnit(goalId: String, context: Context): String {
-            return when(goalId.split("_").last()){
-                "0" -> " ${context.getString(R.string.unit_set)}"
-                "1" -> " ${context.getString(R.string.unit_count)}"
+            return when(goalId.split("_").last().toInt()){
+                GoalsSettingType.SETS.ordinal -> " ${context.getString(R.string.unit_set)}"
+                GoalsSettingType.REPS.ordinal -> " ${context.getString(R.string.unit_count)}"
                 else -> ""
             }
         }
 
         private fun updateCount(count:String, item:Goal, exerciseVM: ExerciseViewModel){
-            when(item.goalId.split("_").last()){
-                "0", "1" -> {   //숫자
+            when(item.goalId.split("_").last().toInt()){
+                GoalsSettingType.SETS.ordinal,
+                GoalsSettingType.REPS.ordinal -> {   //숫자
                     if ((count.toInt()?:0) < 0) return
                     item.lastGoalsValue = count
                     exerciseVM.updateGoal(item)
                 }
-                "2", "3" -> {       //시간
+                GoalsSettingType.TIME_LIMIT_PER_SET.ordinal,
+                GoalsSettingType.TIME_REST.ordinal -> {       //시간
                     item.lastGoalsValue = TimeUtils.formatTimeToSec(count).toString()
                     exerciseVM.updateGoal(item)
                 }

@@ -6,10 +6,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.Observable
+import androidx.databinding.ObservableField
 import androidx.fragment.app.activityViewModels
 import com.myohoon.hometrainingautocounter.R
 import com.myohoon.hometrainingautocounter.databinding.FragmentGoalsSettingBinding
 import com.myohoon.hometrainingautocounter.repository.AppDB
+import com.myohoon.hometrainingautocounter.repository.entity.Goal
+import com.myohoon.hometrainingautocounter.repository.enums.ExerciseType
+import com.myohoon.hometrainingautocounter.repository.enums.GoalsSettingType
 import com.myohoon.hometrainingautocounter.utils.ResUtils
 import com.myohoon.hometrainingautocounter.view.MainActivity
 import com.myohoon.hometrainingautocounter.view.adapter.GoalsSettingAdapter

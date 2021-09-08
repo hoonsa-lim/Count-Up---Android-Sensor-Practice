@@ -55,6 +55,7 @@ class CountFragment : Fragment() {
             if (exercise.eId == ExerciseType.PLANK.ordinal){
                 viewGone(binding.tvCountBottomRight)
                 viewGone(binding.tvGoalsBottomRight)
+                viewGone(binding.tvTitleBottomRight)
             }
 
             //목표
@@ -68,7 +69,6 @@ class CountFragment : Fragment() {
                 //하단 내용 가운데 정렬
                 viewGravityCenter(binding.tvCountBottomLeft)
                 viewGravityCenter(binding.tvCountBottomRight)
-
                 return
             }
 
@@ -81,7 +81,8 @@ class CountFragment : Fragment() {
                                 viewGone(binding.tvGoalsBottomLeft)
                                 viewGravityCenter(binding.tvCountBottomLeft)
                             }else{
-                                binding.tvGoalsBottomLeft.text = "${it.lastGoalsValue} ${getString(R.string.unit_set)}"
+                                binding.tvTitleBottomLeft.text = getString(R.string.sets)
+                                binding.tvGoalsBottomLeft.text = "/ ${it.lastGoalsValue}"
                             }
                         }
                         GoalsSettingType.REPS.ordinal -> {
@@ -90,7 +91,8 @@ class CountFragment : Fragment() {
                             if (!it.isActive) {
                                 viewGone(binding.tvGoalsCenter)
                             }else{
-                                binding.tvGoalsCenter.text = "${it.lastGoalsValue} ${getString(R.string.unit_count)}"
+                                binding.tvTitleCenter.text = getString(R.string.reps)
+                                binding.tvGoalsCenter.text = "/ ${it.lastGoalsValue}"
                             }
                         }
                         GoalsSettingType.TIME_LIMIT_PER_SET.ordinal -> {
@@ -98,15 +100,42 @@ class CountFragment : Fragment() {
                                 if (!it.isActive){
                                     viewGone(binding.tvGoalsCenter)
                                 }else{
-                                    binding.tvGoalsCenter.text = "${TimeUtils.secToFormatTime(it.lastGoalsValue.toInt())}"
+                                    binding.tvTitleCenter.text = getString(R.string.time_limit)
+                                    binding.tvGoalsCenter.text = "/ ${TimeUtils.secToFormatTime(it.lastGoalsValue.toInt())}"
                                 }
                             }else{
                                 if (!it.isActive) {
                                     viewGone(binding.tvGoalsBottomRight)
                                     viewGravityCenter(binding.tvCountBottomRight)
                                 }else{
-                                    binding.tvGoalsBottomRight.text = "${TimeUtils.secToFormatTime(it.lastGoalsValue.toInt())}"
+                                    binding.tvTitleBottomRight.text = getString(R.string.time_limit)
+                                    binding.tvGoalsBottomRight.text = "/ ${TimeUtils.secToFormatTime(it.lastGoalsValue.toInt())}"
                                 }
+                            }
+                        }
+                        GoalsSettingType.TIME_REST.ordinal -> {
+
+                        }
+                    }
+                }
+            }
+
+            //title 설정
+            exerciseVM.currentGoals.get()?.let {
+                it.forEach {
+                    when(it.goalId.split("_").last().toInt()){
+                        GoalsSettingType.SETS.ordinal -> {
+                            binding.tvTitleBottomLeft.text = getString(R.string.sets)
+                        }
+                        GoalsSettingType.REPS.ordinal -> {
+                            if (exercise.eId == ExerciseType.PLANK.ordinal) return@forEach
+                            binding.tvTitleCenter.text = getString(R.string.reps)
+                        }
+                        GoalsSettingType.TIME_LIMIT_PER_SET.ordinal -> {
+                            if (exercise.eId == ExerciseType.PLANK.ordinal){
+                                binding.tvTitleCenter.text = getString(R.string.time_limit)
+                            }else{
+                                binding.tvTitleBottomRight.text = getString(R.string.time_limit)
                             }
                         }
                         GoalsSettingType.TIME_REST.ordinal -> {

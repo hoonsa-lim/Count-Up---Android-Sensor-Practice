@@ -8,12 +8,14 @@ import androidx.databinding.ObservableBoolean
 import androidx.databinding.ObservableField
 import androidx.databinding.ObservableInt
 import androidx.lifecycle.ViewModel
+import com.myohoon.hometrainingautocounter.R
 import com.myohoon.hometrainingautocounter.repository.AppDB
 import com.myohoon.hometrainingautocounter.repository.entity.ExerciseEntity
 import com.myohoon.hometrainingautocounter.repository.entity.Goal
 import com.myohoon.hometrainingautocounter.repository.enums.ExerciseType
 import com.myohoon.hometrainingautocounter.repository.enums.GoalsSettingType
 import com.myohoon.hometrainingautocounter.repository.model.ExerciseLog
+import com.myohoon.hometrainingautocounter.utils.TimeUtils
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -37,10 +39,13 @@ class ExerciseViewModel: ViewModel() {
     val isSetGoals = ObservableBoolean(false)                                               //목표 설정 여부 목표 없이 운동하냐/ 설정 후 운동 하냐
 
     //count fragment data
-    val currentSets = ObservableField("0")
-    val currentReps = ObservableField("0")
-    val currentTimeLimit = ObservableField("00:00")
+    val currentSets = ObservableField(GoalsSettingType.DEFAULT_VALUE)
+    val currentReps = ObservableField(GoalsSettingType.DEFAULT_VALUE)
+    val currentTimeLimit = ObservableField(TimeUtils.secToFormatTime(GoalsSettingType.DEFAULT_VALUE.toInt()))
     val logs = ObservableField<MutableList<ExerciseLog>>()
+
+    //snackbar
+    val snackBarMsg = ObservableField<Int>()
 
     //callback
     private val totalCB = object : Observable.OnPropertyChangedCallback() {
@@ -76,6 +81,16 @@ class ExerciseViewModel: ViewModel() {
     }
 
     fun btnStartExerciseClicked(isSetGoals:Boolean){
+        if (isSetGoals){
+            currentGoals.get()?.let {
+                val list = it.filter { it.isActive && (it.lastGoalsValue == GoalsSettingType.DEFAULT_VALUE) }
+                if (list.isEmpty().not()){
+                    snackBarMsg.set(R.string.required_setting_goals)
+                    return
+                }
+            }
+        }
+
         this.isSetGoals.set(isSetGoals)
         goCountFragment.set(true)
     }

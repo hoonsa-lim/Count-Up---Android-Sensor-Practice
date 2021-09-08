@@ -5,9 +5,11 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.databinding.Observable
 import androidx.databinding.ObservableField
 import androidx.fragment.app.activityViewModels
+import com.google.android.material.snackbar.Snackbar
 import com.myohoon.hometrainingautocounter.R
 import com.myohoon.hometrainingautocounter.databinding.FragmentGoalsSettingBinding
 import com.myohoon.hometrainingautocounter.repository.AppDB
@@ -37,6 +39,10 @@ class GoalsSettingFragment : Fragment() {
     //observable callback
     private lateinit var goCountFragmentCB: Observable.OnPropertyChangedCallback
     private lateinit var goalsCallback: Observable.OnPropertyChangedCallback
+    private lateinit var snackBarCallback: Observable.OnPropertyChangedCallback
+
+    //snackBar
+    private var snackBar: Snackbar? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -65,7 +71,6 @@ class GoalsSettingFragment : Fragment() {
         //운동 목록 초기화
         goalsAdapter = GoalsSettingAdapter(exerciseVM.currentGoals, exerciseVM)
         binding.rcvGoalsSetting.adapter = goalsAdapter
-
     }
 
     private fun initObservableCallback() {
@@ -82,11 +87,34 @@ class GoalsSettingFragment : Fragment() {
                 goalsAdapter.notifyDataSetChanged()
             }
         }
+        snackBarCallback = object : Observable.OnPropertyChangedCallback() {
+            override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+                exerciseVM.snackBarMsg.get()?.let {
+                    if (it != 0) {
+                        showSnackBar(it)
+                        exerciseVM.snackBarMsg.set(0)
+                    }
+                }
+            }
+        }
+        exerciseVM.snackBarMsg.addOnPropertyChangedCallback(snackBarCallback)
         exerciseVM.currentGoals.addOnPropertyChangedCallback(goalsCallback)
         exerciseVM.goCountFragment.addOnPropertyChangedCallback(goCountFragmentCB)
     }
 
+    private fun showSnackBar(res: Int) {
+        if (snackBar == null){
+            snackBar = Snackbar
+                    .make(binding.constraintLayout, res, Snackbar.LENGTH_SHORT)
+                    .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+        }else if(snackBar!!.isShown)
+            snackBar!!.dismiss()
+
+        snackBar!!.show()
+    }
+
     private fun removeObservableCallback() {
+        exerciseVM.snackBarMsg.removeOnPropertyChangedCallback(snackBarCallback)
         exerciseVM.currentGoals.removeOnPropertyChangedCallback(goalsCallback)
         exerciseVM.goCountFragment.removeOnPropertyChangedCallback(goCountFragmentCB)
     }

@@ -5,4 +5,8 @@ enum class GoalsSettingType(val title: String,) {
     REPS("Reps"),                                       //회 수       //영어 속어 repeat
     TIME_LIMIT_PER_SET("TimeLimitPerSet"),              //time limit per 1 set
     TIME_REST("TimeRest");
+
+    companion object{
+        const val DEFAULT_VALUE = "0"
+    }
 }

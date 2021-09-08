@@ -30,11 +30,11 @@ abstract class AppDB : RoomDatabase() {
                         super.onCreate(db)
                         //exercise 테이블 초기값
                         exercises.forEachIndexed { i, v ->
-                            db.execSQL("insert into exercise values ($i, '${v.title}', 'true');")
+                            db.execSQL("insert into exercise values ($i, '${v.title}', '${ExerciseEntity.IS_SHOW_EXPLANATION_DEFAULT_VALUE}');")
 
                             //goals 테이블 초기값
                             goals.forEachIndexed { j, v1 ->
-                                db.execSQL("insert into goals_setting values ('${i}_${j}', $i, 0, '0');")
+                                db.execSQL("insert into goals_setting values ('${i}_${j}', $i, 0, '${GoalsSettingType.DEFAULT_VALUE}');")
                             }
                         }
                     }

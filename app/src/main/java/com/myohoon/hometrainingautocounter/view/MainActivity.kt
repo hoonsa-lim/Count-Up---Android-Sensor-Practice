@@ -86,7 +86,7 @@ class MainActivity : AppCompatActivity() {
         mainActivity = this
 
         //initDB
-        exerciseVM.initRoomDB(applicationContext, "test_db_name")
+        exerciseVM.initRoomDB(applicationContext, "test_db_name")//TODO 나중에 firebase uid
 
         //view
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)

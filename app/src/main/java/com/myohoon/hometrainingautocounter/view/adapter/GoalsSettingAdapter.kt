@@ -55,19 +55,6 @@ class GoalsSettingAdapter(
             binding.tvItemNum.text = "${preprocess(item)}${getUnit(item.goalId, context)}"
 
             //event
-            binding.cbItemActive.setOnTouchListener { v, event ->
-                if (event.action == MotionEvent.ACTION_UP){
-                    item.isActive = !item.isActive
-                    exerciseVM.updateGoal(item)
-                }
-                true
-            }
-            binding.clExerciseItem.setOnClickListener {
-                if (!item.isActive){
-                    item.isActive = true
-                    exerciseVM.updateGoal(item)
-                }
-            }
             binding.tvItemNum.setOnClickListener {
                 if (item.isActive){
                     AlertUtils.instance().showGoalSetting(it.context, item) {
@@ -75,6 +62,26 @@ class GoalsSettingAdapter(
                     }
                 }
             }
+            binding.cbItemActive.setOnTouchListener { v, event ->
+                if (event.action == MotionEvent.ACTION_UP){
+                    item.isActive = !item.isActive
+                    exerciseVM.updateGoal(item)
+
+                    //활성화하고 목표가 0일 경우 자동으로 갯수 설정 다이얼로그 표시
+                    if (item.isActive && item.lastGoalsValue == GoalsSettingType.DEFAULT_VALUE)  binding.tvItemNum.callOnClick()
+                }
+                true
+            }
+            binding.clExerciseItem.setOnClickListener {
+                if (!item.isActive){
+                    item.isActive = true
+                    exerciseVM.updateGoal(item)
+
+                    //활성화하고 목표가 0일 경우 자동으로 갯수 설정 다이얼로그 표시
+                    if (item.isActive && item.lastGoalsValue == GoalsSettingType.DEFAULT_VALUE)  binding.tvItemNum.callOnClick()
+                }
+            }
+
             binding.ibInfo.setOnClickListener {
 
             }
@@ -85,9 +92,7 @@ class GoalsSettingAdapter(
                 GoalsSettingType.REPS.ordinal -> item.lastGoalsValue
 
                 GoalsSettingType.TIME_LIMIT_PER_SET.ordinal,
-                GoalsSettingType.TIME_REST.ordinal ->
-                    if (item.lastGoalsValue == "0") "00:00"
-                    else TimeUtils.secToFormatTime(item.lastGoalsValue.toInt())
+                GoalsSettingType.TIME_REST.ordinal -> TimeUtils.secToFormatTime(item.lastGoalsValue.toInt())
                 else -> ""
             }
         }
@@ -104,8 +109,8 @@ class GoalsSettingAdapter(
             when(item.goalId.split("_").last().toInt()){
                 GoalsSettingType.SETS.ordinal,
                 GoalsSettingType.REPS.ordinal -> {   //숫자
-                    if ((count.toInt()?:0) < 0) return
-                    item.lastGoalsValue = count
+                    if ((count.toInt()?:0) < 0) item.lastGoalsValue = GoalsSettingType.DEFAULT_VALUE
+                    else item.lastGoalsValue = count
                     exerciseVM.updateGoal(item)
                 }
                 GoalsSettingType.TIME_LIMIT_PER_SET.ordinal,

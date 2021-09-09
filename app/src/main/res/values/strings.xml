@@ -44,4 +44,6 @@
     <string name="required_setting_goals">목표는 0 또는 00:00으로 설정할 수 없습니다</string>
     <string name="unit_rep">rep</string>
     <string name="time_limit">Time Limit</string>
+    <string name="end">End</string>
+    <string name="auto_end">Auto End</string>
 </resources>

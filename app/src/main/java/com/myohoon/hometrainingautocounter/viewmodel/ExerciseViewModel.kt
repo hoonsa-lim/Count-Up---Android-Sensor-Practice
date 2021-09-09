@@ -1,6 +1,9 @@
 package com.myohoon.hometrainingautocounter.viewmodel
 
 import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorManager
 import android.util.Log
 import android.view.View
 import androidx.databinding.Observable
@@ -15,6 +18,8 @@ import com.myohoon.hometrainingautocounter.repository.entity.Goal
 import com.myohoon.hometrainingautocounter.repository.enums.ExerciseType
 import com.myohoon.hometrainingautocounter.repository.enums.GoalsSettingType
 import com.myohoon.hometrainingautocounter.repository.model.ExerciseLog
+import com.myohoon.hometrainingautocounter.utils.AlertUtils
+import com.myohoon.hometrainingautocounter.utils.SensorUtils
 import com.myohoon.hometrainingautocounter.utils.TimeUtils
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -43,9 +48,14 @@ class ExerciseViewModel: ViewModel() {
     val currentReps = ObservableField(GoalsSettingType.DEFAULT_VALUE)
     val currentTimeLimit = ObservableField(TimeUtils.secToFormatTime(GoalsSettingType.DEFAULT_VALUE.toInt()))
     val logs = ObservableField<MutableList<ExerciseLog>>()
+    val goCompleteFragment = ObservableBoolean(false)
+    val showRestTimerAlert = ObservableBoolean(false)
 
     //snackbar
     val snackBarMsg = ObservableField<Int>()
+
+    //utils
+    private var sensorUtils: SensorUtils? = null
 
     //callback
     private val totalCB = object : Observable.OnPropertyChangedCallback() {
@@ -53,17 +63,52 @@ class ExerciseViewModel: ViewModel() {
             initCurrentGoals()
         }
     }
-
     private val currentExerciseCB = object : Observable.OnPropertyChangedCallback() {
         override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
             initCurrentGoals()
         }
+    }
+    private val repsCB = object : Observable.OnPropertyChangedCallback() {
+        override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+            currentReps.get()?.let {
+                if (isCompleteGoal(GoalsSettingType.REPS.ordinal, it)) startRest()
+            }
+        }
+    }
+    private val setsCB = object : Observable.OnPropertyChangedCallback() {
+        override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+            currentSets.get()?.let {
+                if (isCompleteGoal(GoalsSettingType.SETS.ordinal, it)) exerciseComplete()
+            }
+        }
+    }
+    private val timeLimitCB = object : Observable.OnPropertyChangedCallback() {
+        override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+            currentTimeLimit.get()?.let {
+                if (isCompleteGoal(GoalsSettingType.TIME_LIMIT_PER_SET.ordinal, it)) startRest()
+            }
+        }
+    }
+
+    private fun isCompleteGoal(goalType: Int, currentCount: String):Boolean {
+        val exercise = currentExercise.get() ?: return false
+        val goals = currentGoals.get() ?: return false
+        val goal = goals.filter {
+            it.eId == exercise.eId && it.goalId.split("_").last().toInt()==goalType
+        }
+        if (goal.isEmpty() || goal.first().isActive.not() || goal.first().lastGoalsValue != currentCount)
+            return false
+
+        return true
     }
 
     //init
     init {
         totalGoals.addOnPropertyChangedCallback(totalCB)
         currentExercise.addOnPropertyChangedCallback(currentExerciseCB)
+        currentReps.addOnPropertyChangedCallback(repsCB)
+        currentSets.addOnPropertyChangedCallback(setsCB)
+        currentTimeLimit.addOnPropertyChangedCallback(timeLimitCB)
     }
 
     //페이지 이동 flag
@@ -158,10 +203,87 @@ class ExerciseViewModel: ViewModel() {
         }
     }
 
+    fun initSensor(sensorManager: SensorManager){
+        currentExercise.get()?.let { exercise ->
+            sensorUtils?.disposeSensor()
+            sensorUtils = SensorUtils(sensorManager, exercise.eId)
+            sensorUtils!!.sensorEvent
+                .filter { sensorUtils!!.getFilter(exercise.eId, it) }
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { processingSensorData(it) }?.let { d -> disposeBag.add(d) }
+        }
+    }
+
+    private fun processingSensorData(sensorEvent: SensorEvent) {
+        currentExercise.get()?.let {
+            when(it.eId){
+                ExerciseType.PUSH_UP.ordinal,
+                ExerciseType.SQUAT.ordinal,
+                ExerciseType.CHIN_UP.ordinal,
+                ExerciseType.SIT_UP.ordinal-> repsCountUp()
+                ExerciseType.PLANK.ordinal -> {
+
+                }
+                else -> {
+                    Log.d(TAG, "processingSensorData: error")
+                }
+            }
+        }
+    }
+
+    private fun startRest() {
+        resetData(false)
+        setsCountUp()
+        showRestTimerAlert.set(true)
+    }
+
+    private fun setsCountUp() {
+        //TODO 알림음
+
+        currentSets.get()?.let { currentSets.set("${it.toInt() + 1}") }
+    }
+
+    private fun repsCountUp() {
+        currentReps.get()?.let { currentReps.set("${it.toInt() + 1}") }
+    }
+
+    private fun resetData(isAllClear:Boolean) {
+        currentReps.set(GoalsSettingType.DEFAULT_VALUE)
+        currentTimeLimit.set(TimeUtils.secToFormatTime(GoalsSettingType.DEFAULT_VALUE.toInt()))
+        if (isAllClear) currentSets.set(GoalsSettingType.DEFAULT_VALUE)
+    }
+
+    private fun exerciseComplete() {
+        resetData(true)
+        goCompleteFragment.set(true)
+    }
+
     override fun onCleared() {
         super.onCleared()
+
+        //remove callback
         totalGoals.removeOnPropertyChangedCallback(totalCB)
-        currentExercise.addOnPropertyChangedCallback(currentExerciseCB)
+        currentExercise.removeOnPropertyChangedCallback(currentExerciseCB)
+        currentReps.removeOnPropertyChangedCallback(repsCB)
+        currentSets.removeOnPropertyChangedCallback(setsCB)
+        currentTimeLimit.removeOnPropertyChangedCallback(timeLimitCB)
+
+        //rx
         if (!disposeBag.isDisposed) disposeBag.dispose()
+
+        //sensor
+        sensorUtils?.let { it.disposeSensor() }
+    }
+
+    fun getCurrentGoalValue(goalType: Int):String {
+        val e = currentExercise.get()
+        val g = currentGoals.get()
+        if (e == null || g == null) return GoalsSettingType.DEFAULT_VALUE
+
+        val goal = g.filter {it.eId == e.eId && it.goalId.split("_").last().toInt() == goalType }
+        if (goal.isEmpty()) return GoalsSettingType.DEFAULT_VALUE
+
+        return goal.first().lastGoalsValue
     }
 }

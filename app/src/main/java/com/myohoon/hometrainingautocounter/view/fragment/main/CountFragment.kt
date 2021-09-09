@@ -1,6 +1,10 @@
 package com.myohoon.hometrainingautocounter.view.fragment.main
 
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.os.Bundle
+import android.service.carrier.CarrierMessagingService
 import android.view.Gravity
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -8,11 +12,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Adapter
 import android.widget.TextView
+import androidx.databinding.Observable
 import androidx.fragment.app.activityViewModels
 import com.myohoon.hometrainingautocounter.R
 import com.myohoon.hometrainingautocounter.databinding.FragmentCountBinding
 import com.myohoon.hometrainingautocounter.repository.enums.ExerciseType
 import com.myohoon.hometrainingautocounter.repository.enums.GoalsSettingType
+import com.myohoon.hometrainingautocounter.utils.AlertUtils
 import com.myohoon.hometrainingautocounter.utils.ResUtils
 import com.myohoon.hometrainingautocounter.utils.TimeUtils
 import com.myohoon.hometrainingautocounter.view.adapter.ExerciseLogAdapter
@@ -30,6 +36,10 @@ class CountFragment : Fragment() {
     //viewModel
     private val exerciseVM by activityViewModels<ExerciseViewModel>()
 
+    //observable callback
+    private lateinit var showRestTimerCallback: Observable.OnPropertyChangedCallback
+    private lateinit var goCompleteFragmentCallback: Observable.OnPropertyChangedCallback
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
@@ -38,8 +48,48 @@ class CountFragment : Fragment() {
         binding.exerciseVM = exerciseVM
         initView()
         initLogs()
-
+        initSensor()
+        initObservableCallback()
         return binding.root
+    }
+
+    private fun initObservableCallback() {
+        showRestTimerCallback = object : Observable.OnPropertyChangedCallback() {
+            override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+                if (exerciseVM.showRestTimerAlert.get()){
+                    exerciseVM.showRestTimerAlert.set(false)
+
+                    AlertUtils.instance()
+                        .showRestTimer(requireContext(),
+                            exerciseVM.getCurrentGoalValue(GoalsSettingType.TIME_REST.ordinal).toInt()
+                        )
+                }
+            }
+        }
+        goCompleteFragmentCallback = object : Observable.OnPropertyChangedCallback() {
+            override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+                if (exerciseVM.goCompleteFragment.get()){
+                    exerciseVM.goCompleteFragment.set(false)
+
+                }
+            }
+        }
+
+        exerciseVM.goCompleteFragment.addOnPropertyChangedCallback(goCompleteFragmentCallback)
+        exerciseVM.showRestTimerAlert.addOnPropertyChangedCallback(showRestTimerCallback)
+    }
+
+    private fun removeObservableCallback(){
+        exerciseVM.goCompleteFragment.removeOnPropertyChangedCallback(showRestTimerCallback)
+        exerciseVM.showRestTimerAlert.removeOnPropertyChangedCallback(showRestTimerCallback)
+    }
+
+    private fun initSensor() {
+        requireContext()?.let {
+            (it.getSystemService(Context.SENSOR_SERVICE) as SensorManager)?.let {
+                exerciseVM.initSensor(it)
+            }
+        }
     }
 
     private fun initLogs() {
@@ -157,6 +207,7 @@ class CountFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        removeObservableCallback()
         _binding = null
     }
 }

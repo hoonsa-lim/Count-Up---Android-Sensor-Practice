@@ -1,8 +1,10 @@
 package com.myohoon.hometrainingautocounter.utils
 
+import android.content.Context
 import android.os.Build
 import android.util.Log
 import android.util.TimeUtils
+import androidx.core.os.ConfigurationCompat
 import java.lang.Exception
 import java.sql.Date
 import java.sql.Timestamp
@@ -55,28 +57,22 @@ class TimeUtils {
             return "${timeDigitTwo(m, 60)}:${timeDigitTwo(s, 59)}"
         }
 
-        fun getUnixTime(): Int{
-            return (System.currentTimeMillis() / 1000).toInt()
+        fun getUnixTime(): Long{
+            return (System.currentTimeMillis() / 1000)
         }
 
-//        fun convertUnixToFormat(second:Long): String{
-//            try {
-//                val date =
-//                    Instant.ofEpochSecond(second).atZone(ZoneId.systemDefault()).toLocalDateTime()
-//                return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-//            }catch (e: Exception){
-//                return ""
-//            }
-//        }
+        fun unixTimeToFormatTime(unix:Long, context: Context): String{
+            Log.d(TAG, "unixTimeToFormatTime: unix time == $unix")
+            val sdf = SimpleDateFormat(DATETIME_PATTERN, getCurrentLocale(context))
+            return sdf.format(Date(unix * 1000))
+        }
 
-        fun currentFormatTime(): String{
-            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATETIME_PATTERN))
-            } else {
-                val sdf = SimpleDateFormat(DATETIME_PATTERN)
-                sdf.timeZone = TimeZone.getDefault()
-                sdf.format(Date())
-            }
+        fun getCurrentLocale(context: Context):Locale{
+            return ConfigurationCompat.getLocales(context.resources.configuration)[0]
+        }
+
+        fun currentFormatTime(context: Context): String{
+            return unixTimeToFormatTime(getUnixTime(), context)
         }
     }
 

@@ -18,11 +18,3 @@ object ImageResourceBindingAdapter {
             .into(imageView)
     }
 }
-
-object StrResourceBindingAdapter {
-    @BindingAdapter(value = ["strRes"])
-    @JvmStatic
-    fun setTextResource(tv : TextView, resId : Int){
-        tv.setText(resId)
-    }
-}

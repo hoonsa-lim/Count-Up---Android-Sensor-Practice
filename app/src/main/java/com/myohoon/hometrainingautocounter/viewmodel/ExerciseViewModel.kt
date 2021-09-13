@@ -1,32 +1,31 @@
 package com.myohoon.hometrainingautocounter.viewmodel
 
-import android.content.Context
-import android.hardware.Sensor
+import android.app.Application
 import android.hardware.SensorEvent
 import android.hardware.SensorManager
 import android.util.Log
-import android.view.View
 import androidx.databinding.Observable
 import androidx.databinding.ObservableBoolean
 import androidx.databinding.ObservableField
-import androidx.databinding.ObservableInt
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import com.myohoon.hometrainingautocounter.R
 import com.myohoon.hometrainingautocounter.repository.AppDB
 import com.myohoon.hometrainingautocounter.repository.entity.ExerciseEntity
+import com.myohoon.hometrainingautocounter.repository.entity.ExerciseLogDetail
+import com.myohoon.hometrainingautocounter.repository.entity.ExerciseLogStart
 import com.myohoon.hometrainingautocounter.repository.entity.Goal
 import com.myohoon.hometrainingautocounter.repository.enums.ExerciseType
 import com.myohoon.hometrainingautocounter.repository.enums.GoalsSettingType
-import com.myohoon.hometrainingautocounter.repository.model.ExerciseLog
-import com.myohoon.hometrainingautocounter.utils.AlertUtils
+import com.myohoon.hometrainingautocounter.repository.enums.LogStatus
 import com.myohoon.hometrainingautocounter.utils.SensorUtils
 import com.myohoon.hometrainingautocounter.utils.TimeUtils
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import java.util.ArrayList
+import io.reactivex.subjects.PublishSubject
+import java.sql.Time
 
-class ExerciseViewModel: ViewModel() {
+class ExerciseViewModel(app: Application): AndroidViewModel(app) {
     companion object{
         const val TAG = "ExerciseViewModel"
     }
@@ -47,15 +46,19 @@ class ExerciseViewModel: ViewModel() {
     val currentSets = ObservableField(GoalsSettingType.DEFAULT_VALUE)
     val currentReps = ObservableField(GoalsSettingType.DEFAULT_VALUE)
     val currentTimeLimit = ObservableField(TimeUtils.secToFormatTime(GoalsSettingType.DEFAULT_VALUE.toInt()))
-    val logs = ObservableField<MutableList<ExerciseLog>>()
+    val logs = ObservableField<MutableList<ExerciseLogDetail>>()
     val goCompleteFragment = ObservableBoolean(false)
     val showRestTimerAlert = ObservableBoolean(false)
+    private var currentLogStart: ExerciseLogStart? = null                                               //count fragment 화면에서 현재 시작한 운동의 logStart
 
     //snackbar
     val snackBarMsg = ObservableField<Int>()
 
     //utils
     private var sensorUtils: SensorUtils? = null
+
+    //input event
+    val createCountFragment = PublishSubject.create<ExerciseEntity>()
 
     //callback
     private val totalCB = object : Observable.OnPropertyChangedCallback() {
@@ -71,7 +74,8 @@ class ExerciseViewModel: ViewModel() {
     private val repsCB = object : Observable.OnPropertyChangedCallback() {
         override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
             currentReps.get()?.let {
-                if (isCompleteGoal(GoalsSettingType.REPS.ordinal, it)) startRest()
+                if (isCompleteGoal(GoalsSettingType.REPS.ordinal, it))
+                    startRest(GoalsSettingType.REPS.name)
             }
         }
     }
@@ -85,7 +89,8 @@ class ExerciseViewModel: ViewModel() {
     private val timeLimitCB = object : Observable.OnPropertyChangedCallback() {
         override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
             currentTimeLimit.get()?.let {
-                if (isCompleteGoal(GoalsSettingType.TIME_LIMIT_PER_SET.ordinal, it)) startRest()
+                if (isCompleteGoal(GoalsSettingType.TIME_LIMIT_PER_SET.ordinal, it))
+                    startRest(GoalsSettingType.TIME_LIMIT_PER_SET.name)
             }
         }
     }
@@ -109,14 +114,17 @@ class ExerciseViewModel: ViewModel() {
         currentReps.addOnPropertyChangedCallback(repsCB)
         currentSets.addOnPropertyChangedCallback(setsCB)
         currentTimeLimit.addOnPropertyChangedCallback(timeLimitCB)
+
+        //rx style
+        createCountFragment.subscribe{ exercise -> insertLogStart(exercise) }?.let { d -> disposeBag.add(d) }
     }
 
     //페이지 이동 flag
     val goCountFragment = ObservableBoolean(false)                                            //count fragment 이동 여부
 
     //main activity 생성 시 호출
-    fun initRoomDB(context: Context, uid: String) {
-        db = AppDB.instance(context, uid)
+    fun initRoomDB(uid: String) {
+        db = AppDB.instance(getApplication(), uid)
 
         //운동 목록 및 설정 관련 데이터
         getExerciseList()
@@ -161,6 +169,42 @@ class ExerciseViewModel: ViewModel() {
             },{
                 Log.d(TAG, "getExerciseList: error == ${it.message}")
             })?.let { d ->  disposeBag.add(d)}
+    }
+
+    private fun insertLogStart(exercise: ExerciseEntity) {
+        val now = TimeUtils.getUnixTime()
+        val formatTime = TimeUtils.unixTimeToFormatTime(now, getApplication()).split(" ")
+        if (formatTime.isNullOrEmpty() || formatTime.size < 2) return
+        val logStart = ExerciseLogStart(
+            "${exercise.eId}_${now}",
+            exercise.eId, formatTime.first(), formatTime.last(),
+        )
+
+        db.logsDao().insertLogStart(logStart)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
+                currentLogStart = logStart
+                getNowExerciseLogs()
+                Log.d(TAG, "insertLogStart: success")
+            },{
+                currentLogStart = null
+                Log.d(TAG, "insertLogStart: fail")
+            })?.let { d ->  disposeBag.add(d)}
+    }
+
+    private fun getNowExerciseLogs(){
+        currentLogStart?.let {
+            db.logsDao().selectLogDetailsByLogStartId(it.logStartId)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ newList ->
+                    logs.set(newList)
+                    Log.d(TAG, "getNowExerciseLogs: success size == ${newList.size}")
+                },{
+                    Log.d(TAG, "getExerciseList: error == ${it.message}")
+                })?.let { d ->  disposeBag.add(d)}
+        }
     }
 
     fun updateGoal(goal: Goal){
@@ -232,10 +276,61 @@ class ExerciseViewModel: ViewModel() {
         }
     }
 
-    private fun startRest() {
+    private fun startRest(cause: String) {
+        insertLogDetail(cause)
         resetData(false)
         setsCountUp()
         showRestTimerAlert.set(true)
+    }
+
+    private fun insertLogDetail(cause: String) {
+        currentLogStart?.let {
+            val reps = if(it.eId == ExerciseType.PLANK.ordinal) null else currentReps.get()!!.toInt()
+            val timeSpent = TimeUtils.formatTimeToSec(currentTimeLimit.get()!!)
+            val status = getLogDetail(it, cause)
+
+            val logDetail = ExerciseLogDetail(
+                logStartId = it.logStartId,
+                count = reps,
+                timeSpent = timeSpent,
+                status = status,
+                saveAt = TimeUtils.currentFormatTime(getApplication())
+            )
+
+            db.logsDao().insertLogDetail(logDetail)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    Log.d(TAG, "insertLogDetail: success")
+                },{
+                    Log.d(TAG, "insertLogDetail: fail")
+                })?.let { d ->  disposeBag.add(d)}
+        }
+    }
+
+    private fun getLogDetail(logStart: ExerciseLogStart, cause: String): String {
+        //플랭크의 경우
+        if (logStart.eId == ExerciseType.PLANK.ordinal){
+            if (cause == GoalsSettingType.TIME_LIMIT_PER_SET.name
+                && isActiveCurrentGoal(GoalsSettingType.TIME_LIMIT_PER_SET.ordinal))
+                    return LogStatus.SUCCESS.name
+            else if(cause == GoalsSettingType.TIME_REST.name
+                && isActiveCurrentGoal(GoalsSettingType.TIME_LIMIT_PER_SET.ordinal))
+                    return LogStatus.FAIL_EARLY_FINISH.name
+            else
+                return LogStatus.NORMAL_MANUAL_FINISH.name
+        }else{
+
+            //플랭크 외 운동일 경우
+            if (cause == GoalsSettingType.REPS.name) return LogStatus.SUCCESS.name
+            else if(cause == GoalsSettingType.TIME_LIMIT_PER_SET.name) return LogStatus.FAIL_TIME_OVER.name
+            else if (cause == GoalsSettingType.TIME_REST.name
+                && (isActiveCurrentGoal(GoalsSettingType.TIME_LIMIT_PER_SET.ordinal)
+                        || isActiveCurrentGoal(GoalsSettingType.REPS.ordinal)))
+                            return LogStatus.FAIL_EARLY_FINISH.name
+            else
+                return LogStatus.NORMAL_MANUAL_FINISH.name
+        }
     }
 
     private fun setsCountUp() {
@@ -285,5 +380,15 @@ class ExerciseViewModel: ViewModel() {
         if (goal.isEmpty()) return GoalsSettingType.DEFAULT_VALUE
 
         return goal.first().lastGoalsValue
+    }
+
+    private fun isActiveCurrentGoal(typeOrdinal: Int): Boolean{
+        val e = currentExercise.get() ?: return false
+        val g = currentGoals.get() ?: return false
+
+        val goal = g.filter {it.eId == e.eId && it.goalId.split("_").last().toInt() == typeOrdinal }
+        if (goal.isEmpty()) return false
+
+        return goal.first().isActive
     }
 }

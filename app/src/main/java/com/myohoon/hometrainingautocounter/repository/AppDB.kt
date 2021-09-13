@@ -7,15 +7,22 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.myohoon.hometrainingautocounter.repository.dao.ExerciseDao
 import com.myohoon.hometrainingautocounter.repository.dao.GoalsSettingDao
-import com.myohoon.hometrainingautocounter.repository.entity.ExerciseEntity
-import com.myohoon.hometrainingautocounter.repository.entity.Goal
+import com.myohoon.hometrainingautocounter.repository.dao.LogsDao
+import com.myohoon.hometrainingautocounter.repository.entity.*
 import com.myohoon.hometrainingautocounter.repository.enums.ExerciseType
 import com.myohoon.hometrainingautocounter.repository.enums.GoalsSettingType
 
-@Database(entities = [ExerciseEntity::class, Goal::class], version = 1)
+@Database(entities = [
+    ExerciseEntity::class,
+    Goal::class,
+    ExerciseLogStart::class,
+    ExerciseLogDetail::class,
+    ExerciseLogEnd::class,
+ ], version = 1)
 abstract class AppDB : RoomDatabase() {
     abstract fun exerciseSettingDao(): ExerciseDao
     abstract fun goalsSettingDao(): GoalsSettingDao
+    abstract fun logsDao(): LogsDao
 
     companion object{
         private var appDB: AppDB? = null

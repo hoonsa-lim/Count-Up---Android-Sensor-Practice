@@ -16,6 +16,8 @@ import androidx.databinding.Observable
 import androidx.fragment.app.activityViewModels
 import com.myohoon.hometrainingautocounter.R
 import com.myohoon.hometrainingautocounter.databinding.FragmentCountBinding
+import com.myohoon.hometrainingautocounter.repository.entity.ExerciseEntity
+import com.myohoon.hometrainingautocounter.repository.entity.ExerciseLogStart
 import com.myohoon.hometrainingautocounter.repository.enums.ExerciseType
 import com.myohoon.hometrainingautocounter.repository.enums.GoalsSettingType
 import com.myohoon.hometrainingautocounter.utils.AlertUtils
@@ -32,6 +34,7 @@ class CountFragment : Fragment() {
     //view
     private var _binding: FragmentCountBinding? = null
     private val binding get() = _binding!!
+    private lateinit var logsAdapter: ExerciseLogAdapter
 
     //viewModel
     private val exerciseVM by activityViewModels<ExerciseViewModel>()
@@ -39,6 +42,7 @@ class CountFragment : Fragment() {
     //observable callback
     private lateinit var showRestTimerCallback: Observable.OnPropertyChangedCallback
     private lateinit var goCompleteFragmentCallback: Observable.OnPropertyChangedCallback
+    private lateinit var logsCallback: Observable.OnPropertyChangedCallback
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -46,10 +50,14 @@ class CountFragment : Fragment() {
         //view
         _binding = FragmentCountBinding.inflate(inflater, container, false)
         binding.exerciseVM = exerciseVM
-        initView()
-        initLogs()
-        initSensor()
-        initObservableCallback()
+
+        exerciseVM.currentExercise.get()?.let { exercise ->
+            initView(exercise)
+            initLogs(exercise)
+            initSensor()
+            initObservableCallback()
+        }
+
         return binding.root
     }
 
@@ -74,7 +82,13 @@ class CountFragment : Fragment() {
                 }
             }
         }
+        logsCallback = object : Observable.OnPropertyChangedCallback() {
+            override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+                logsAdapter.notifyDataSetChanged()
+            }
+        }
 
+        exerciseVM.logs.addOnPropertyChangedCallback(logsCallback)
         exerciseVM.goCompleteFragment.addOnPropertyChangedCallback(goCompleteFragmentCallback)
         exerciseVM.showRestTimerAlert.addOnPropertyChangedCallback(showRestTimerCallback)
     }
@@ -82,6 +96,7 @@ class CountFragment : Fragment() {
     private fun removeObservableCallback(){
         exerciseVM.goCompleteFragment.removeOnPropertyChangedCallback(showRestTimerCallback)
         exerciseVM.showRestTimerAlert.removeOnPropertyChangedCallback(showRestTimerCallback)
+        exerciseVM.logs.addOnPropertyChangedCallback(logsCallback)
     }
 
     private fun initSensor() {
@@ -92,105 +107,105 @@ class CountFragment : Fragment() {
         }
     }
 
-    private fun initLogs() {
-        binding.rcvCountLog.adapter = ExerciseLogAdapter(exerciseVM.logs)
+    private fun initLogs(exercise: ExerciseEntity) {
+        exerciseVM.createCountFragment.onNext(exercise)
+        logsAdapter = ExerciseLogAdapter(exerciseVM.logs)
+        binding.rcvCountLog.adapter = logsAdapter
     }
 
-    private fun initView() {
-        exerciseVM.currentExercise.get()?.let { exercise ->
-            //운동 제목
-            binding.tvExerciseTitle.text = getString(ResUtils.getResExerciseName(exercise.eId))
+    private fun initView(exercise: ExerciseEntity) {
+        //운동 제목
+        binding.tvExerciseTitle.text = getString(ResUtils.getResExerciseName(exercise.eId))
 
-            //플랭크의 경우, 하단 우측 사용 안함.
-            if (exercise.eId == ExerciseType.PLANK.ordinal){
-                viewGone(binding.tvCountBottomRight)
-                viewGone(binding.tvGoalsBottomRight)
-                viewGone(binding.tvTitleBottomRight)
-            }
+        //플랭크의 경우, 하단 우측 사용 안함.
+        if (exercise.eId == ExerciseType.PLANK.ordinal){
+            viewGone(binding.tvCountBottomRight)
+            viewGone(binding.tvGoalsBottomRight)
+            viewGone(binding.tvTitleBottomRight)
+        }
 
-            //목표
-            //목표 설정 안함으로 유입 시
-            if (exerciseVM.isSetGoals.get().not()){
-                //목표 가림
-                viewGone(binding.tvGoalsCenter)
-                viewGone(binding.tvGoalsBottomLeft)
-                viewGone(binding.tvGoalsBottomRight)
+        //목표
+        //목표 설정 안함으로 유입 시
+        if (exerciseVM.isSetGoals.get().not()){
+            //목표 가림
+            viewGone(binding.tvGoalsCenter)
+            viewGone(binding.tvGoalsBottomLeft)
+            viewGone(binding.tvGoalsBottomRight)
 
-                //하단 내용 가운데 정렬
-                viewGravityCenter(binding.tvCountBottomLeft)
-                viewGravityCenter(binding.tvCountBottomRight)
-                return
-            }
+            //하단 내용 가운데 정렬
+            viewGravityCenter(binding.tvCountBottomLeft)
+            viewGravityCenter(binding.tvCountBottomRight)
+            return
+        }
 
-            //목표 설정으로 유입 시
-            exerciseVM.currentGoals.get()?.let {
-                it.forEach {
-                    when(it.goalId.split("_").last().toInt()){
-                        GoalsSettingType.SETS.ordinal -> {
-                            if (!it.isActive) {
-                                viewGone(binding.tvGoalsBottomLeft)
-                                viewGravityCenter(binding.tvCountBottomLeft)
-                            }else{
-                                binding.tvTitleBottomLeft.text = getString(R.string.sets)
-                                binding.tvGoalsBottomLeft.text = "/ ${it.lastGoalsValue}"
-                            }
+        //목표 설정으로 유입 시
+        exerciseVM.currentGoals.get()?.let {
+            it.forEach {
+                when(it.goalId.split("_").last().toInt()){
+                    GoalsSettingType.SETS.ordinal -> {
+                        if (!it.isActive) {
+                            viewGone(binding.tvGoalsBottomLeft)
+                            viewGravityCenter(binding.tvCountBottomLeft)
+                        }else{
+                            binding.tvTitleBottomLeft.text = getString(R.string.sets)
+                            binding.tvGoalsBottomLeft.text = "/ ${it.lastGoalsValue}"
                         }
-                        GoalsSettingType.REPS.ordinal -> {
-                            if (exercise.eId == ExerciseType.PLANK.ordinal) return@forEach
+                    }
+                    GoalsSettingType.REPS.ordinal -> {
+                        if (exercise.eId == ExerciseType.PLANK.ordinal) return@forEach
 
-                            if (!it.isActive) {
+                        if (!it.isActive) {
+                            viewGone(binding.tvGoalsCenter)
+                        }else{
+                            binding.tvTitleCenter.text = getString(R.string.reps)
+                            binding.tvGoalsCenter.text = "/ ${it.lastGoalsValue}"
+                        }
+                    }
+                    GoalsSettingType.TIME_LIMIT_PER_SET.ordinal -> {
+                        if (exercise.eId == ExerciseType.PLANK.ordinal){
+                            if (!it.isActive){
                                 viewGone(binding.tvGoalsCenter)
                             }else{
-                                binding.tvTitleCenter.text = getString(R.string.reps)
-                                binding.tvGoalsCenter.text = "/ ${it.lastGoalsValue}"
+                                binding.tvTitleCenter.text = getString(R.string.time_limit)
+                                binding.tvGoalsCenter.text = "/ ${TimeUtils.secToFormatTime(it.lastGoalsValue.toInt())}"
                             }
-                        }
-                        GoalsSettingType.TIME_LIMIT_PER_SET.ordinal -> {
-                            if (exercise.eId == ExerciseType.PLANK.ordinal){
-                                if (!it.isActive){
-                                    viewGone(binding.tvGoalsCenter)
-                                }else{
-                                    binding.tvTitleCenter.text = getString(R.string.time_limit)
-                                    binding.tvGoalsCenter.text = "/ ${TimeUtils.secToFormatTime(it.lastGoalsValue.toInt())}"
-                                }
+                        }else{
+                            if (!it.isActive) {
+                                viewGone(binding.tvGoalsBottomRight)
+                                viewGravityCenter(binding.tvCountBottomRight)
                             }else{
-                                if (!it.isActive) {
-                                    viewGone(binding.tvGoalsBottomRight)
-                                    viewGravityCenter(binding.tvCountBottomRight)
-                                }else{
-                                    binding.tvTitleBottomRight.text = getString(R.string.time_limit)
-                                    binding.tvGoalsBottomRight.text = "/ ${TimeUtils.secToFormatTime(it.lastGoalsValue.toInt())}"
-                                }
+                                binding.tvTitleBottomRight.text = getString(R.string.time_limit)
+                                binding.tvGoalsBottomRight.text = "/ ${TimeUtils.secToFormatTime(it.lastGoalsValue.toInt())}"
                             }
                         }
-                        GoalsSettingType.TIME_REST.ordinal -> {
+                    }
+                    GoalsSettingType.TIME_REST.ordinal -> {
 
-                        }
                     }
                 }
             }
+        }
 
-            //title 설정
-            exerciseVM.currentGoals.get()?.let {
-                it.forEach {
-                    when(it.goalId.split("_").last().toInt()){
-                        GoalsSettingType.SETS.ordinal -> {
-                            binding.tvTitleBottomLeft.text = getString(R.string.sets)
+        //title 설정
+        exerciseVM.currentGoals.get()?.let {
+            it.forEach {
+                when(it.goalId.split("_").last().toInt()){
+                    GoalsSettingType.SETS.ordinal -> {
+                        binding.tvTitleBottomLeft.text = getString(R.string.sets)
+                    }
+                    GoalsSettingType.REPS.ordinal -> {
+                        if (exercise.eId == ExerciseType.PLANK.ordinal) return@forEach
+                        binding.tvTitleCenter.text = getString(R.string.reps)
+                    }
+                    GoalsSettingType.TIME_LIMIT_PER_SET.ordinal -> {
+                        if (exercise.eId == ExerciseType.PLANK.ordinal){
+                            binding.tvTitleCenter.text = getString(R.string.time_limit)
+                        }else{
+                            binding.tvTitleBottomRight.text = getString(R.string.time_limit)
                         }
-                        GoalsSettingType.REPS.ordinal -> {
-                            if (exercise.eId == ExerciseType.PLANK.ordinal) return@forEach
-                            binding.tvTitleCenter.text = getString(R.string.reps)
-                        }
-                        GoalsSettingType.TIME_LIMIT_PER_SET.ordinal -> {
-                            if (exercise.eId == ExerciseType.PLANK.ordinal){
-                                binding.tvTitleCenter.text = getString(R.string.time_limit)
-                            }else{
-                                binding.tvTitleBottomRight.text = getString(R.string.time_limit)
-                            }
-                        }
-                        GoalsSettingType.TIME_REST.ordinal -> {
+                    }
+                    GoalsSettingType.TIME_REST.ordinal -> {
 
-                        }
                     }
                 }
             }

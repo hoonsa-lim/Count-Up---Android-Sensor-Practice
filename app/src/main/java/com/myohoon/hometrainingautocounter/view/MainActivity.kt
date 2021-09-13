@@ -12,6 +12,8 @@ import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.TAB_LABEL_VISIBILITY_UNLABELED
@@ -75,7 +77,13 @@ class MainActivity : AppCompatActivity() {
     private var mBackWait = 0L
 
     //viewModel
-    private val exerciseVM by viewModels<ExerciseViewModel>()
+    private val exerciseVM by viewModels<ExerciseViewModel>{
+        object : ViewModelProvider.Factory {
+            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+                return ExerciseViewModel(application) as T
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,7 +94,7 @@ class MainActivity : AppCompatActivity() {
         mainActivity = this
 
         //initDB
-        exerciseVM.initRoomDB(applicationContext, "test_db_name")//TODO 나중에 firebase uid
+        exerciseVM.initRoomDB("test_db_name")//TODO 나중에 firebase uid
 
         //view
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)

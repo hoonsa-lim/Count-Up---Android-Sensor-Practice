@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.updateLayoutParams
 import androidx.databinding.ObservableField
 import com.myohoon.hometrainingautocounter.R
 import com.myohoon.hometrainingautocounter.databinding.AlertCustomBinding
@@ -156,47 +157,100 @@ class AlertUtils {
 
     }
 
-    fun showRestTimer(c: Context?, time:Int){
+    fun showRestTimer(c: Context?, time:Int?){
         c?.let { Dialog(it)?.let { dialog ->
             dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))  //둥근 배경 적용을 위해 사용함
 
             val binding = AlertRestBinding.inflate(LayoutInflater.from(c))
+            val count = ObservableField(TimeUtils.secToFormatTime(time ?: 0))
             var disposable: Disposable? = null
+            var timerObservable = Observable.interval(1, TimeUnit.SECONDS).share()
 
             //count
-            binding.tvCount.text = TimeUtils.secToFormatTime(time)
+            binding.count = count
 
             //check
-            binding.switchAutoEnd.isChecked = AppShared.getInstance(c).isAutoEndRestTime
+            if (time == null){
+                binding.switchAutoEnd.visibility = View.GONE
+                binding.switchAutoEnd.isChecked = true
+            }else{
+                binding.switchAutoEnd.visibility = View.VISIBLE
+                binding.switchAutoEnd.isChecked = AppShared.getInstance(c).isAutoEndRestTime
+            }
 
             //progress
             binding.progressBar.progress = 0
-            binding.progressBar.max = time
-
-            //event
-            binding.btnEnd.setOnClickListener {
-                disposable?.let { it.dispose() }
-                AppShared.getInstance(c).isAutoEndRestTime = binding.switchAutoEnd.isChecked
-                dialog.dismiss()
-            }
+            binding.progressBar.max = time ?: 0
 
             //timer
-            disposable = Observable.interval(1, TimeUnit.SECONDS)
-                .subscribeOn(Schedulers.computation())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({
-                   if (it+1 > time && binding.switchAutoEnd.isChecked)
-                       binding.btnEnd.callOnClick()
-                   else if(it+1 > time)
-                       disposable?.dispose()
-                   else{
-                       binding.progressBar.progress = it.toInt()+1
-                       binding.tvCount.text = TimeUtils.secToFormatTime((time - (it.toInt()+1)))
-                   }
+            if (time != null){
+                timerObservable
+                    .subscribeOn(Schedulers.computation())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe({
+                        if(it+1 > time){
+                            if (binding.switchAutoEnd.isChecked){
+                                binding.btnEnd.callOnClick()
+                            }else{
+                                disposable?.dispose()
+                            }
+                        }
+                        else{
+                            binding.progressBar.progress = it.toInt()+1
+                            count.set(TimeUtils.secToFormatTime((time - (it.toInt()+1))))
+                        }
+                    },{
+                        disposable?.dispose()
+                    })?.let { d -> disposable = d }
+            }
 
-                },{
-                    disposable?.dispose()
-                })
+            //button
+            if (time == null){
+                binding.btnStart.visibility = View.VISIBLE
+            }else{
+                binding.btnStart.visibility = View.GONE
+                binding.btnEnd.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                    topToTop = binding.guideline14.id
+                }
+            }
+
+            //event
+            binding.btnM1.setOnClickListener { calculate(GoalsSettingType.TIME_REST.ordinal.toString(), -1, count) }
+            binding.btnM10.setOnClickListener { calculate(GoalsSettingType.TIME_REST.ordinal.toString(), -10, count) }
+            binding.btnM100.setOnClickListener { calculate(GoalsSettingType.TIME_REST.ordinal.toString(), -100, count) }
+            binding.btnA1.setOnClickListener { calculate(GoalsSettingType.TIME_REST.ordinal.toString(), 1, count) }
+            binding.btnA10.setOnClickListener { calculate(GoalsSettingType.TIME_REST.ordinal.toString(), 10, count) }
+            binding.btnA100.setOnClickListener { calculate(GoalsSettingType.TIME_REST.ordinal.toString(), 100, count) }
+            binding.btnEnd.setOnClickListener {
+                if (time != null){
+                    AppShared.getInstance(c).isAutoEndRestTime = binding.switchAutoEnd.isChecked
+                }
+                disposable?.let { it.dispose() }
+                dialog.dismiss()
+            }
+            
+            //btnstart 는 매개변수 시간 값이 null 일 때만 사용. 그때만 visible
+            binding.btnStart.setOnClickListener {
+                count.get()?.let { c ->
+                    val time = TimeUtils.formatTimeToSec(c)
+                    binding.progressBar.max = time
+
+                    timerObservable
+                        .subscribeOn(Schedulers.computation())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe({
+                            Log.d(TAG, "showRestTimer: timer $it")
+                            if (it+1 > time){
+                                binding.btnEnd.callOnClick()
+                            }else{
+                                binding.progressBar.progress = it.toInt()+1
+                                count.set(TimeUtils.secToFormatTime((time - (it.toInt()+1))))
+                            }
+                        },{
+                            disposable?.dispose()
+                        })?.let { d -> disposable = d }
+                }
+            }
 
             dialog.setContentView(binding.root)
             dialog.show()

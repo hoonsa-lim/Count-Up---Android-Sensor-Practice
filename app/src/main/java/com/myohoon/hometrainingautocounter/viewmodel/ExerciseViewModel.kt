@@ -21,9 +21,11 @@ import com.myohoon.hometrainingautocounter.utils.SensorUtils
 import com.myohoon.hometrainingautocounter.utils.TimeUtils
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import java.sql.Time
+import java.util.concurrent.TimeUnit
 
 class ExerciseViewModel(app: Application): AndroidViewModel(app) {
     companion object{
@@ -51,6 +53,9 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
     val showRestTimerAlert = ObservableBoolean(false)
     private var currentLogStart: ExerciseLogStart? = null                                               //count fragment 화면에서 현재 시작한 운동의 logStart
 
+    //timer
+    var timerDisposable: Disposable? = null
+
     //snackbar
     val snackBarMsg = ObservableField<Int>()
 
@@ -59,6 +64,10 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
 
     //input event
     val createCountFragment = PublishSubject.create<ExerciseEntity>()
+    val btnRestButtonClick = PublishSubject.create<Unit>()
+
+    //output event
+
 
     //callback
     private val totalCB = object : Observable.OnPropertyChangedCallback() {
@@ -89,7 +98,7 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
     private val timeLimitCB = object : Observable.OnPropertyChangedCallback() {
         override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
             currentTimeLimit.get()?.let {
-                if (isCompleteGoal(GoalsSettingType.TIME_LIMIT_PER_SET.ordinal, it))
+                if (isCompleteGoal(GoalsSettingType.TIME_LIMIT_PER_SET.ordinal, TimeUtils.formatTimeToSec(it).toString()))
                     startRest(GoalsSettingType.TIME_LIMIT_PER_SET.name)
             }
         }
@@ -117,6 +126,7 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
 
         //rx style
         createCountFragment.subscribe{ exercise -> insertLogStart(exercise) }?.let { d -> disposeBag.add(d) }
+        btnRestButtonClick.subscribe { startRest(GoalsSettingType.TIME_REST.name) }?.let { d->disposeBag.add(d) }
     }
 
     //페이지 이동 flag
@@ -278,6 +288,7 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
 
     private fun startRest(cause: String) {
         insertLogDetail(cause)
+        startTimer(false)
         resetData(false)
         setsCountUp()
         showRestTimerAlert.set(true)
@@ -316,20 +327,20 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
                     return LogStatus.SUCCESS.name
             else if(cause == GoalsSettingType.TIME_REST.name
                 && isActiveCurrentGoal(GoalsSettingType.TIME_LIMIT_PER_SET.ordinal))
-                    return LogStatus.FAIL_EARLY_FINISH.name
+                    return LogStatus.EARLY_FINISH.name
             else
-                return LogStatus.NORMAL_MANUAL_FINISH.name
+                return LogStatus.MANUALLY_FINISH.name
         }else{
 
             //플랭크 외 운동일 경우
             if (cause == GoalsSettingType.REPS.name) return LogStatus.SUCCESS.name
-            else if(cause == GoalsSettingType.TIME_LIMIT_PER_SET.name) return LogStatus.FAIL_TIME_OVER.name
+            else if(cause == GoalsSettingType.TIME_LIMIT_PER_SET.name) return LogStatus.TIME_OVER.name
             else if (cause == GoalsSettingType.TIME_REST.name
                 && (isActiveCurrentGoal(GoalsSettingType.TIME_LIMIT_PER_SET.ordinal)
                         || isActiveCurrentGoal(GoalsSettingType.REPS.ordinal)))
-                            return LogStatus.FAIL_EARLY_FINISH.name
+                            return LogStatus.EARLY_FINISH.name
             else
-                return LogStatus.NORMAL_MANUAL_FINISH.name
+                return LogStatus.MANUALLY_FINISH.name
         }
     }
 
@@ -340,7 +351,26 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
     }
 
     private fun repsCountUp() {
-        currentReps.get()?.let { currentReps.set("${it.toInt() + 1}") }
+        currentReps.get()?.let {
+            if (it.toInt() == 0) startTimer(true)
+            currentReps.set("${it.toInt() + 1}")
+        }
+    }
+
+    private fun startTimer(isStart:Boolean) {
+        if (isStart){
+            io.reactivex.Observable.interval(1, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    currentTimeLimit.set(TimeUtils.secToFormatTime(it.toInt() + 1))
+                }?.let { d->
+                    timerDisposable = d
+                    disposeBag.add(d)
+                }
+        }else{
+            timerDisposable?.let { it.dispose() }
+        }
     }
 
     private fun resetData(isAllClear:Boolean) {
@@ -382,7 +412,7 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
         return goal.first().lastGoalsValue
     }
 
-    private fun isActiveCurrentGoal(typeOrdinal: Int): Boolean{
+    fun isActiveCurrentGoal(typeOrdinal: Int): Boolean{
         val e = currentExercise.get() ?: return false
         val g = currentGoals.get() ?: return false
 

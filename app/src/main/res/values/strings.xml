@@ -46,4 +46,15 @@
     <string name="time_limit">Time Limit</string>
     <string name="end">End</string>
     <string name="auto_end">Auto End</string>
+    <string name="exercise">Exercise</string>
+    <string name="time">Time</string>
+    <string name="status">Status</string>
+    <string name="plus_min_10">+10 min</string>
+    <string name="plus_min_1">+1 min</string>
+    <string name="plus_sec_10">+10 sec</string>
+    <string name="plus_sec_1">+1 sec</string>
+    <string name="minus_min_10">-10 min</string>
+    <string name="minus_min_1">-1 min</string>
+    <string name="minus_sec_10">-10 sec</string>
+    <string name="minus_sec_1">-1 sec</string>
 </resources>

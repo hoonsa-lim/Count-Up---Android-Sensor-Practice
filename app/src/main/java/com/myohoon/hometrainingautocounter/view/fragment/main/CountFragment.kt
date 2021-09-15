@@ -67,10 +67,12 @@ class CountFragment : Fragment() {
                 if (exerciseVM.showRestTimerAlert.get()){
                     exerciseVM.showRestTimerAlert.set(false)
 
-                    AlertUtils.instance()
-                        .showRestTimer(requireContext(),
+                    val time =
+                        if (exerciseVM.isActiveCurrentGoal(GoalsSettingType.TIME_REST.ordinal))
                             exerciseVM.getCurrentGoalValue(GoalsSettingType.TIME_REST.ordinal).toInt()
-                        )
+                        else null
+
+                    AlertUtils.instance().showRestTimer(requireContext(), time)
                 }
             }
         }
@@ -210,6 +212,9 @@ class CountFragment : Fragment() {
                 }
             }
         }
+
+        //event
+        binding.btnRest.setOnClickListener { exerciseVM.btnRestButtonClick.onNext(Unit) }
     }
 
     private fun viewGravityCenter(tv: TextView) {

@@ -4,7 +4,6 @@ import android.app.Dialog
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -18,19 +17,11 @@ import com.myohoon.hometrainingautocounter.databinding.AlertRestBinding
 import com.myohoon.hometrainingautocounter.repository.AppShared
 import com.myohoon.hometrainingautocounter.repository.entity.Goal
 import com.myohoon.hometrainingautocounter.repository.enums.GoalsSettingType
-import com.myohoon.hometrainingautocounter.repository.model.MyAlert
+import com.myohoon.hometrainingautocounter.repository.model.Alert
 import io.reactivex.Observable
-import io.reactivex.ObservableSource
-import io.reactivex.Scheduler
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
-import io.reactivex.subjects.PublishSubject
-import java.sql.Time
-import java.text.SimpleDateFormat
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
-import java.util.*
 import java.util.concurrent.TimeUnit
 
 class AlertUtils {
@@ -45,7 +36,7 @@ class AlertUtils {
         }
     }
 
-    fun show(context: Context?, alert:MyAlert){
+    fun show(context: Context?, alert:Alert){
         val dl = context?.let { Dialog(it) }
         dl?.let { dialog->
             dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))  //둥근 배경 적용을 위해 사용함
@@ -55,11 +46,11 @@ class AlertUtils {
 
             //event
             binding.btnNegative.setOnClickListener {
-                alert.negativeEvent()
+                alert.negativeEvent?.let { it() }
                 dialog.dismiss()
             }
             binding.btnPositive.setOnClickListener {
-                alert.positiveEvent()
+                alert.positiveEvent?.let { it() }
                 dialog.dismiss()
             }
             dialog.setContentView(binding.root)

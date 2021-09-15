@@ -65,6 +65,7 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
     //input event
     val createCountFragment = PublishSubject.create<ExerciseEntity>()
     val btnRestButtonClick = PublishSubject.create<Unit>()
+    val exerciseQuit = PublishSubject.create<Unit>()
 
     //output event
 
@@ -91,7 +92,7 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
     private val setsCB = object : Observable.OnPropertyChangedCallback() {
         override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
             currentSets.get()?.let {
-                if (isCompleteGoal(GoalsSettingType.SETS.ordinal, it)) exerciseComplete()
+                if (isCompleteGoal(GoalsSettingType.SETS.ordinal, it)) exerciseEnd()
             }
         }
     }
@@ -127,6 +128,7 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
         //rx style
         createCountFragment.subscribe{ exercise -> insertLogStart(exercise) }?.let { d -> disposeBag.add(d) }
         btnRestButtonClick.subscribe { startRest(GoalsSettingType.TIME_REST.name) }?.let { d->disposeBag.add(d) }
+        exerciseQuit.subscribe{ exerciseEnd() }?.let { d->disposeBag.add(d) }
     }
 
     //페이지 이동 flag
@@ -287,11 +289,16 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
     }
 
     private fun startRest(cause: String) {
+        //마지막 세트의 경우 휴식 x
+        if (isActiveCurrentGoal(GoalsSettingType.SETS.ordinal)
+            && (currentSets.get() ?: GoalsSettingType.DEFAULT_VALUE).toInt()+1 < getCurrentGoalValue(GoalsSettingType.SETS.ordinal).toInt()){
+            showRestTimerAlert.set(true)
+        }
+
         insertLogDetail(cause)
         startTimer(false)
         resetData(false)
         setsCountUp()
-        showRestTimerAlert.set(true)
     }
 
     private fun insertLogDetail(cause: String) {
@@ -345,8 +352,6 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
     }
 
     private fun setsCountUp() {
-        //TODO 알림음
-
         currentSets.get()?.let { currentSets.set("${it.toInt() + 1}") }
     }
 
@@ -354,6 +359,7 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
         currentReps.get()?.let {
             if (it.toInt() == 0) startTimer(true)
             currentReps.set("${it.toInt() + 1}")
+            //TODO 알림음
         }
     }
 
@@ -376,10 +382,13 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
     private fun resetData(isAllClear:Boolean) {
         currentReps.set(GoalsSettingType.DEFAULT_VALUE)
         currentTimeLimit.set(TimeUtils.secToFormatTime(GoalsSettingType.DEFAULT_VALUE.toInt()))
-        if (isAllClear) currentSets.set(GoalsSettingType.DEFAULT_VALUE)
+        if (isAllClear) {
+            currentSets.set(GoalsSettingType.DEFAULT_VALUE)
+            logs.set(null)
+        }
     }
 
-    private fun exerciseComplete() {
+    private fun exerciseEnd(){
         resetData(true)
         goCompleteFragment.set(true)
     }

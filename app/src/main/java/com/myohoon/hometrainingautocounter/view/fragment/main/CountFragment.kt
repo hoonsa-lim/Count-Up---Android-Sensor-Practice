@@ -23,6 +23,7 @@ import com.myohoon.hometrainingautocounter.repository.enums.GoalsSettingType
 import com.myohoon.hometrainingautocounter.utils.AlertUtils
 import com.myohoon.hometrainingautocounter.utils.ResUtils
 import com.myohoon.hometrainingautocounter.utils.TimeUtils
+import com.myohoon.hometrainingautocounter.view.MainActivity
 import com.myohoon.hometrainingautocounter.view.adapter.ExerciseLogAdapter
 import com.myohoon.hometrainingautocounter.viewmodel.ExerciseViewModel
 
@@ -80,7 +81,7 @@ class CountFragment : Fragment() {
             override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
                 if (exerciseVM.goCompleteFragment.get()){
                     exerciseVM.goCompleteFragment.set(false)
-
+                    MainActivity.changeFragmentInMain(ResultFragment(), ResultFragment.TAG, false)
                 }
             }
         }
@@ -215,6 +216,7 @@ class CountFragment : Fragment() {
 
         //event
         binding.btnRest.setOnClickListener { exerciseVM.btnRestButtonClick.onNext(Unit) }
+        binding.btnFinish.setOnClickListener { requireActivity().onBackPressed() }
     }
 
     private fun viewGravityCenter(tv: TextView) {

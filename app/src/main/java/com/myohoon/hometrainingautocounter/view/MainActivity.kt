@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatDelegate
@@ -16,12 +15,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.google.android.material.tabs.TabLayout
-import com.google.android.material.tabs.TabLayout.TAB_LABEL_VISIBILITY_UNLABELED
 import com.google.android.material.tabs.TabLayoutMediator
 import com.myohoon.hometrainingautocounter.R
 import com.myohoon.hometrainingautocounter.databinding.ActivityMainBinding
+import com.myohoon.hometrainingautocounter.repository.model.Alert
+import com.myohoon.hometrainingautocounter.utils.AlertUtils
 import com.myohoon.hometrainingautocounter.view.fragment.calender.CalenderFragment
 import com.myohoon.hometrainingautocounter.view.fragment.graph.GraphFragment
+import com.myohoon.hometrainingautocounter.view.fragment.main.CountFragment
 import com.myohoon.hometrainingautocounter.view.fragment.main.MainFragment
 import com.myohoon.hometrainingautocounter.view.fragment.ranking.RankingFragment
 import com.myohoon.hometrainingautocounter.view.fragment.setting.SettingFragment
@@ -60,13 +61,21 @@ class MainActivity : AppCompatActivity() {
 //            } } }
 //        }
 
-        fun addFragmentInMain(fragment: Fragment, backStack:String? = null) {
+        fun changeFragmentInMain(fragment: Fragment, backStack:String? = null, isAdd: Boolean = true) {
             mainActivity?.let {
-                it.supportFragmentManager
-                    .beginTransaction()
-                    .add(R.id.mainFrame, fragment)
-                    .addToBackStack(backStack)
-                    .commit()
+                if (isAdd){
+                    it.supportFragmentManager
+                        .beginTransaction()
+                        .add(R.id.mainFrame, fragment)
+                        .addToBackStack(backStack)
+                        .commit()
+                }else{
+                    it.supportFragmentManager
+                        .beginTransaction()
+                        .replace(R.id.mainFrame, fragment)
+                        .addToBackStack(backStack)
+                        .commit()
+                }
             }
         }
     }
@@ -154,10 +163,6 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "onBackPressed: count == $count")
         Log.d(TAG, "onBackPressed: name == $name")
 
-//        //하단 네비게이션 바가 표시되는 곳은 프레그먼트 하나만 있을 때
-//        if (count <= 2) showBNV(true)
-//        else showBNV(false)
-//
         when(name){
             CalenderFragment.TAG, GraphFragment.TAG,
             MainFragment.TAG, RankingFragment.TAG, SettingFragment.TAG -> {
@@ -170,18 +175,18 @@ class MainActivity : AppCompatActivity() {
                     System.exit(0)
                 }
             }
+            CountFragment.TAG -> {
+                val alert = Alert(
+                    R.string.exercise_end, R.string.exercise_end_desc, btnPositiveText = R.string.quit,
+                    positiveEvent = {
+                        exerciseVM.exerciseQuit.onNext(Unit)
+                        super.onBackPressed()
+                    }
+                )
+                AlertUtils.instance().show(this@MainActivity, alert)
+            }
             else -> super.onBackPressed()
         }
-//
-//        //키보드 hide
-//        FunctionUtils.dismissKeyboard(this)
-
-
-//        if (binding.pager.currentItem == 0) {
-//            super.onBackPressed()
-//        } else {
-//            binding.pager.currentItem = binding.pager.currentItem - 1
-//        }
     }
 
     private inner class ScreenSlidePagerAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {

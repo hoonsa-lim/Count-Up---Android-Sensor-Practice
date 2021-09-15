@@ -40,7 +40,6 @@
                 android:padding="7dp"
                 android:text="@{index}"
                 android:textSize="@dimen/caption"
-                android:textStyle="bold"
                 card_view:layout_constraintBottom_toBottomOf="parent"
                 card_view:layout_constraintEnd_toStartOf="@+id/guideline10"
                 card_view:layout_constraintStart_toStartOf="parent"

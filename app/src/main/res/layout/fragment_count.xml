@@ -268,25 +268,25 @@
 
             <Button
                 android:id="@+id/btnFinish"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/basic_side_margin"
-                android:text="@string/finish"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@+id/guideline5"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <Button
-                android:id="@+id/btnRest"
                 style="@style/ButtonTheme2"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/basic_side_margin"
-                android:text="@string/rest"
+                android:text="@string/quit"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/guideline5"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <Button
+                android:id="@+id/btnRest"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/basic_side_margin"
+                android:text="@string/time_rest"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/guideline5"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <androidx.constraintlayout.widget.Guideline

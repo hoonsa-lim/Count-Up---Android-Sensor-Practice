@@ -1,7 +1,6 @@
 package com.myohoon.hometrainingautocounter.view.adapter
 
 import android.content.Context
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.ObservableField
@@ -9,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.myohoon.hometrainingautocounter.R
 import com.myohoon.hometrainingautocounter.databinding.ItemExerciseBinding
 import com.myohoon.hometrainingautocounter.repository.entity.ExerciseEntity
-import com.myohoon.hometrainingautocounter.repository.model.MyAlert
+import com.myohoon.hometrainingautocounter.repository.model.Alert
 import com.myohoon.hometrainingautocounter.utils.AlertUtils
 import com.myohoon.hometrainingautocounter.utils.ResUtils
 import com.myohoon.hometrainingautocounter.view.MainActivity
@@ -57,7 +56,7 @@ class ExerciseAdapter(
                     addPageFragment(item)
                 else{
                     showAlertExerciseInfo(
-                        makeExerciseAlert(it.context, item, {
+                        makeExerciseAlert(item, {
                             addPageFragment(item)
                         },{
                             item.isShowExplanation = "false"
@@ -68,39 +67,33 @@ class ExerciseAdapter(
                 }
             }
             binding.ibExerciseInfo.setOnClickListener {
-                showAlertExerciseInfo(
-                    makeExerciseAlert(it.context, item, {},{}, isOneBtn = true),
-                    it.context
-                )
+                showAlertExerciseInfo(makeExerciseAlert(item, isOneBtn = true), it.context)
             }
         }
 
         private fun addPageFragment(e: ExerciseEntity) {
             vm.currentExercise.set(e)
-            MainActivity.addFragmentInMain(GoalsSettingFragment(), GoalsSettingFragment.TAG)
+            MainActivity.changeFragmentInMain(GoalsSettingFragment(), GoalsSettingFragment.TAG)
         }
 
         private fun makeExerciseAlert(
-            context: Context,
             exercise: ExerciseEntity,
-            f1: () -> Unit, f2: () -> Unit,
+            f1: (() -> Unit)? = null, f2: (() -> Unit)? = null,
             btnPositiveText: Int? = null,
             isOneBtn: Boolean = false
-        ): MyAlert {
-
-             val alert = MyAlert(
-                context.getString(ResUtils.getResExerciseName(exercise.eId)),
-                context.getString(ResUtils.getResExerciseExplanation(exercise.eId)),
+        ): Alert {
+             val alert = Alert(
+                 ResUtils.getResExerciseName(exercise.eId),
+                 ResUtils.getResExerciseExplanation(exercise.eId),
                  ResUtils.getResExerciseImg(exercise.eId),
                 isOneButton = isOneBtn,
-                btnPositiveText = if (btnPositiveText != null) context.getString(btnPositiveText) else null,
-                btnNegativeText = context.getString(R.string.dont_show_again),
-                positiveEvent = f1, negativeEvent = f2
+                btnNegativeText = R.string.dont_show_again,
+                positiveEvent = f1, negativeEvent = f2,
             )
             return alert
         }
 
-        private fun showAlertExerciseInfo(alert: MyAlert, context: Context){
+        private fun showAlertExerciseInfo(alert: Alert, context: Context){
             AlertUtils.instance().show(context, alert)
         }
     }

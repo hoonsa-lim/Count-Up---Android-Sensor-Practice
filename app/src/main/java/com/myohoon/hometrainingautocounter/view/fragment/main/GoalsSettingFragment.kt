@@ -7,15 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.databinding.Observable
-import androidx.databinding.ObservableField
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.snackbar.Snackbar
 import com.myohoon.hometrainingautocounter.R
 import com.myohoon.hometrainingautocounter.databinding.FragmentGoalsSettingBinding
-import com.myohoon.hometrainingautocounter.repository.AppDB
-import com.myohoon.hometrainingautocounter.repository.entity.Goal
-import com.myohoon.hometrainingautocounter.repository.enums.ExerciseType
-import com.myohoon.hometrainingautocounter.repository.enums.GoalsSettingType
 import com.myohoon.hometrainingautocounter.utils.ResUtils
 import com.myohoon.hometrainingautocounter.view.MainActivity
 import com.myohoon.hometrainingautocounter.view.adapter.GoalsSettingAdapter
@@ -78,7 +73,7 @@ class GoalsSettingFragment : Fragment() {
             override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
                 if (exerciseVM.goCountFragment.get()){
                     exerciseVM.goCountFragment.set(false)
-                    MainActivity.addFragmentInMain(CountFragment(), CountFragment.TAG)
+                    MainActivity.changeFragmentInMain(CountFragment(), CountFragment.TAG)
                 }
             }
         }

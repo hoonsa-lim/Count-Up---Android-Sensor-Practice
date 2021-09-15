@@ -57,4 +57,7 @@
     <string name="minus_min_1">-1 min</string>
     <string name="minus_sec_10">-10 sec</string>
     <string name="minus_sec_1">-1 sec</string>
+    <string name="exercise_end">Quit exercise</string>
+    <string name="exercise_end_desc">Do you want to quit the exercise?</string>
+    <string name="quit">Quit</string>
 </resources>

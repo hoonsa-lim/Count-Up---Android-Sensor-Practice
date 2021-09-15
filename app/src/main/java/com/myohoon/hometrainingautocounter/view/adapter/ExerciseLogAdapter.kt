@@ -38,7 +38,7 @@ class ExerciseLogAdapter(
             //순
             val item = list[position]
             binding.item = item
-            binding.index = TimeUtils.timeDigitTwo(list.size - position, Int.MAX_VALUE)
+            binding.index = "${list.size - position}"
         }
     }
 }

@@ -242,10 +242,12 @@
                 android:layout_marginRight="@dimen/basic_side_margin"
                 android:background="@null"
                 android:padding="@dimen/icon_padding"
+                android:onClick="@{() -> exerciseVM.btnRingClick()}"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_baseline_notifications_active_24"
-                app:tint="@color/gray_100" />
+                imageDrawable="@{exerciseVM.isRingIcon() ? @drawable/ic_baseline_notifications_active_24 : @drawable/ic_baseline_notifications_off_24}"
+                app:tint="@color/gray_100"
+                tools:background="@drawable/ic_baseline_notifications_active_24"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.Guideline

@@ -10,6 +10,7 @@ import androidx.databinding.ObservableField
 import androidx.lifecycle.AndroidViewModel
 import com.myohoon.hometrainingautocounter.R
 import com.myohoon.hometrainingautocounter.repository.AppDB
+import com.myohoon.hometrainingautocounter.repository.AppShared
 import com.myohoon.hometrainingautocounter.repository.entity.ExerciseEntity
 import com.myohoon.hometrainingautocounter.repository.entity.ExerciseLogDetail
 import com.myohoon.hometrainingautocounter.repository.entity.ExerciseLogStart
@@ -18,6 +19,7 @@ import com.myohoon.hometrainingautocounter.repository.enums.ExerciseType
 import com.myohoon.hometrainingautocounter.repository.enums.GoalsSettingType
 import com.myohoon.hometrainingautocounter.repository.enums.LogStatus
 import com.myohoon.hometrainingautocounter.utils.SensorUtils
+import com.myohoon.hometrainingautocounter.utils.SoundEffectUtils
 import com.myohoon.hometrainingautocounter.utils.TimeUtils
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -33,6 +35,7 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
     }
     //db
     private lateinit var db: AppDB
+    private val prefs = AppShared.getInstance(app)
 
     //rx
     private val disposeBag = CompositeDisposable()
@@ -43,6 +46,7 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
     val currentGoals = ObservableField(mutableListOf<Goal>())
     val exerciseList = ObservableField(mutableListOf<ExerciseEntity>())                             //운동 목록
     val isSetGoals = ObservableBoolean(false)                                               //목표 설정 여부 목표 없이 운동하냐/ 설정 후 운동 하냐
+    val isRingIcon = ObservableBoolean(prefs.isRing)
 
     //count fragment data
     val currentSets = ObservableField(GoalsSettingType.DEFAULT_VALUE)
@@ -61,6 +65,8 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
 
     //utils
     private var sensorUtils: SensorUtils? = null
+    private val soundUtils = SoundEffectUtils.getInstance(app)
+
 
     //input event
     val createCountFragment = PublishSubject.create<ExerciseEntity>()
@@ -359,7 +365,9 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
         currentReps.get()?.let {
             if (it.toInt() == 0) startTimer(true)
             currentReps.set("${it.toInt() + 1}")
-            //TODO 알림음
+
+            //알림음
+            if (isRingIcon.get()) soundUtils.noti.onNext(Unit)
         }
     }
 
@@ -408,6 +416,7 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
 
         //sensor
         sensorUtils?.let { it.disposeSensor() }
+        soundUtils.clearResource()
     }
 
     fun getCurrentGoalValue(goalType: Int):String {
@@ -429,5 +438,9 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
         if (goal.isEmpty()) return false
 
         return goal.first().isActive
+    }
+
+    fun btnRingClick(){
+        isRingIcon.set(isRingIcon.get().not())
     }
 }

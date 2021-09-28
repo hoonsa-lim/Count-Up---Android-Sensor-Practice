@@ -25,7 +25,7 @@
     <string name="dont_show_again">Don\'t show\nagain</string>
     <string name="start">Start</string>
     <string name="setting_goals">Setting Goals</string>
-    <string name="back_pressed_description">한번더 누루시면 종료 됩니다</string>
+    <string name="back_pressed_description">Press BACK again to exit.</string>
     <string name="no_goals">No Goals</string>
     <string name="finish">Finish</string>
     <string name="rest">Rest</string>

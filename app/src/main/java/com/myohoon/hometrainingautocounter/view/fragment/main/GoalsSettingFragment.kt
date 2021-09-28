@@ -73,7 +73,7 @@ class GoalsSettingFragment : Fragment() {
             override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
                 if (exerciseVM.goCountFragment.get()){
                     exerciseVM.goCountFragment.set(false)
-                    MainActivity.changeFragmentInMain(CountFragment(), CountFragment.TAG)
+                    MainActivity.changeFragmentInMain(CountFragment(), isAdd = false)
                 }
             }
         }

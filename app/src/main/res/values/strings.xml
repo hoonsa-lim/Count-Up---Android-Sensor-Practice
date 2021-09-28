@@ -17,7 +17,7 @@
     <string name="exercise_sit_up">Sit up</string>
     <string name="exercise_plank">Plank</string>
 
-    <string name="exercise_desc_push_up">팔굽혀펴기 설명입니다.팔굽혀펴기 설명입니다.팔굽혀펴기 설명입니다.팔굽혀펴기 설명입니다.</string>
+    <string name="exercise_desc_push_up">1. Take a push-up position.\n2. Put your cell phone between your arms.\n3. Put your cell phone front your chest.\n\n* Count when the distance between the cell phone and the chest is less than 5cm.</string>
     <string name="exercise_desc_squat">스쿼트 설명입니다스쿼트 설명입니다스쿼트 설명입니다스쿼트 설명입니다스쿼트 설명입니다스쿼트 설명입니다스쿼트 설명입니다스쿼트 설명입니다스쿼트 설명입니다</string>
     <string name="exercise_desc_chin_up">턱걸이 설명입니다.턱걸이 설명입니다.턱걸이 설명입니다.턱걸이 설명입니다.턱걸이 설명입니다.턱걸이 설명입니다.턱걸이 설명입니다.턱걸이 설명입니다.</string>
     <string name="exercise_desc_sit_up">윗몸일으키기설명입니다.윗몸일으키기설명입니다.윗몸일으키기설명입니다.윗몸일으키기설명입니다.윗몸일으키기설명입니다.윗몸일으키기설명입니다.</string>
@@ -41,7 +41,7 @@
     <string name="save">Save</string>
     <string name="sec">sec</string>
     <string name="min">min</string>
-    <string name="required_setting_goals">목표는 0 또는 00:00으로 설정할 수 없습니다</string>
+    <string name="required_setting_goals">You can\'t set the target to 0 or 00:00</string>
     <string name="unit_rep">rep</string>
     <string name="time_limit">Time Limit</string>
     <string name="end">End</string>
@@ -60,4 +60,8 @@
     <string name="exercise_end">Quit exercise</string>
     <string name="exercise_end_desc">Do you want to quit the exercise?</string>
     <string name="quit">Quit</string>
+    <string name="success">Success</string>
+    <string name="time_over">Time Over</string>
+    <string name="early_finish">Early Finish</string>
+    <string name="manually_finish">--</string>
 </resources>

@@ -56,7 +56,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center_horizontal|bottom"
-                    android:text="TextView"
+                    android:text=""
                     android:textColor="@color/gray_100"
                     android:textSize="@dimen/h5"
                     android:textStyle="bold"
@@ -107,7 +107,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center_horizontal|bottom"
-                    android:text="TextView"
+                    android:text=""
                     android:textColor="@color/gray_100"
                     android:textSize="@dimen/h5"
                     android:textStyle="bold"
@@ -158,7 +158,7 @@
                     android:layout_weight="1"
                     android:textStyle="bold"
                     android:gravity="center_horizontal|top"
-                    android:text="TextView"
+                    android:text=""
                     android:textColor="@color/gray_100"
                     android:textSize="@dimen/h3"
                     tools:text="Reps" />
@@ -221,7 +221,7 @@
                 android:layout_marginEnd="411dp"
                 android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintGuide_percent="0.33"
+                app:layout_constraintGuide_percent="0.4"
                 app:layout_constraintStart_toStartOf="parent" />
 
             <androidx.constraintlayout.widget.Guideline
@@ -231,7 +231,7 @@
                 android:layout_marginEnd="411dp"
                 android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintGuide_percent="0.66"
+                app:layout_constraintGuide_percent="0.75"
                 app:layout_constraintStart_toStartOf="parent" />
 
             <ImageButton
@@ -245,7 +245,7 @@
                 android:onClick="@{() -> exerciseVM.btnRingClick()}"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                imageDrawable="@{exerciseVM.isRingIcon() ? @drawable/ic_baseline_notifications_active_24 : @drawable/ic_baseline_notifications_off_24}"
+                imageDrawable="@{exerciseVM.isRingOn() ? @drawable/ic_baseline_notifications_active_24 : @drawable/ic_baseline_notifications_off_24}"
                 app:tint="@color/gray_100"
                 tools:background="@drawable/ic_baseline_notifications_active_24"/>
         </androidx.constraintlayout.widget.ConstraintLayout>

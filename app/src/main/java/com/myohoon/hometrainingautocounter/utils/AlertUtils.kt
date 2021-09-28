@@ -175,6 +175,9 @@ class AlertUtils {
 
             //timer
             if (time != null){
+                //숫자 패드 가림
+                binding.clNumberPad.visibility = View.GONE
+
                 timerObservable
                     .subscribeOn(Schedulers.computation())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -200,9 +203,9 @@ class AlertUtils {
                 binding.btnStart.visibility = View.VISIBLE
             }else{
                 binding.btnStart.visibility = View.GONE
-                binding.btnEnd.updateLayoutParams<ConstraintLayout.LayoutParams> {
-                    topToTop = binding.guideline14.id
-                }
+//                binding.btnEnd.updateLayoutParams<ConstraintLayout.LayoutParams> {
+//                    topToTop = binding.guideline14.id
+//                }
             }
 
             //event
@@ -223,6 +226,11 @@ class AlertUtils {
             //btnstart 는 매개변수 시간 값이 null 일 때만 사용. 그때만 visible
             binding.btnStart.setOnClickListener {
                 count.get()?.let { c ->
+                    //숫자 패드, 시작 버튼 가림
+                    binding.clNumberPad.visibility = View.GONE
+                    binding.btnStart.visibility = View.GONE
+
+                    //시간 초기화
                     val time = TimeUtils.formatTimeToSec(c)
                     binding.progressBar.max = time
 

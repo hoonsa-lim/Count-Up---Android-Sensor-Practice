@@ -5,6 +5,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        release {
+            storeFile file('/Users/elecvery/Documents/hslim/MyData/sub_project/0_AppKey/HsKeyStore')
+            storePassword 'gnstk6958'
+            keyPassword 'gnstk6958'
+            keyAlias 'hoonsa'
+        }
+    }
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
 
@@ -17,13 +25,18 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-
     buildTypes {
+        debug {
+            buildConfigField "int", "BottomTabNum", "5"
+        }
         release {
+            buildConfigField "int", "BottomTabNum", "1"
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8

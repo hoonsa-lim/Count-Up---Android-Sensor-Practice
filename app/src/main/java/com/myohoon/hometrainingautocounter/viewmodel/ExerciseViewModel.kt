@@ -1,9 +1,11 @@
 package com.myohoon.hometrainingautocounter.viewmodel
 
 import android.app.Application
+import android.content.Context
 import android.hardware.SensorEvent
 import android.hardware.SensorManager
 import android.util.Log
+import android.view.WindowManager
 import androidx.databinding.Observable
 import androidx.databinding.ObservableBoolean
 import androidx.databinding.ObservableField
@@ -21,18 +23,22 @@ import com.myohoon.hometrainingautocounter.repository.enums.LogStatus
 import com.myohoon.hometrainingautocounter.utils.SensorUtils
 import com.myohoon.hometrainingautocounter.utils.SoundEffectUtils
 import com.myohoon.hometrainingautocounter.utils.TimeUtils
+import com.myohoon.hometrainingautocounter.view.fragment.main.CountFragment
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
-import java.sql.Time
 import java.util.concurrent.TimeUnit
+import kotlin.math.absoluteValue
 
 class ExerciseViewModel(app: Application): AndroidViewModel(app) {
     companion object{
         const val TAG = "ExerciseViewModel"
+        private const val COUNT_CONDITION_PUSH_UP = 2.0 //근접 선서는 0.0 또는 5.0만 나타남.
+        private const val COUNT_CONDITION_SQUAT = 2.0f //
     }
+
     //db
     private lateinit var db: AppDB
     private val prefs = AppShared.getInstance(app)
@@ -46,7 +52,7 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
     val currentGoals = ObservableField(mutableListOf<Goal>())
     val exerciseList = ObservableField(mutableListOf<ExerciseEntity>())                             //운동 목록
     val isSetGoals = ObservableBoolean(false)                                               //목표 설정 여부 목표 없이 운동하냐/ 설정 후 운동 하냐
-    val isRingIcon = ObservableBoolean(prefs.isRing)
+    val isRingOn = ObservableBoolean(prefs.isRing)
 
     //count fragment data
     val currentSets = ObservableField(GoalsSettingType.DEFAULT_VALUE)
@@ -56,6 +62,7 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
     val goCompleteFragment = ObservableBoolean(false)
     val showRestTimerAlert = ObservableBoolean(false)
     private var currentLogStart: ExerciseLogStart? = null                                               //count fragment 화면에서 현재 시작한 운동의 logStart
+    private val beforeData = arrayOfNulls<Float>(3)
 
     //timer
     var timerDisposable: Disposable? = null
@@ -72,9 +79,6 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
     val createCountFragment = PublishSubject.create<ExerciseEntity>()
     val btnRestButtonClick = PublishSubject.create<Unit>()
     val exerciseQuit = PublishSubject.create<Unit>()
-
-    //output event
-
 
     //callback
     private val totalCB = object : Observable.OnPropertyChangedCallback() {
@@ -270,11 +274,17 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
             sensorUtils?.disposeSensor()
             sensorUtils = SensorUtils(sensorManager, exercise.eId)
             sensorUtils!!.sensorEvent
-                .filter { sensorUtils!!.getFilter(exercise.eId, it) }
+                .filter { isExercising() }
+                .filter { getCountCondition(exercise.eId, it) }
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe { processingSensorData(it) }?.let { d -> disposeBag.add(d) }
         }
+    }
+
+    private fun isExercising():Boolean {
+
+        return true
     }
 
     private fun processingSensorData(sensorEvent: SensorEvent) {
@@ -294,10 +304,47 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
         }
     }
 
+    private fun getCountCondition(exerciseId: Int, sensorEvent: SensorEvent): Boolean{
+        when(exerciseId){
+            ExerciseType.PUSH_UP.ordinal -> return sensorEvent.values[0] < COUNT_CONDITION_PUSH_UP
+            ExerciseType.SQUAT.ordinal -> {
+                //초기화
+//                if (beforeData[0] == null) beforeData[0] = sensorEvent.values[2]
+//
+////                Log.d(TAG, "getCountCondition:  == ${sensorEvent.values[2] - (beforeData[0]?:0f)}")
+//                Log.d(TAG, "getCountConditionx: beforeData == ${(beforeData[0]?:0f)}, z == ${sensorEvent.values[0]}")
+//                Log.d(TAG, "getCountConditiony: beforeData == ${(beforeData[0]?:0f)}, z == ${sensorEvent.values[1]}")
+//                Log.d(TAG, "getCountConditionz: beforeData == ${(beforeData[0]?:0f)}, z == ${sensorEvent.values[2]}")
+//                Log.d(TAG, "getCountCondition:  == ===============================")
+//
+////                //비교
+////                if ((beforeData[0]!! - sensorEvent.values[2].absoluteValue) > COUNT_CONDITION_SQUAT){
+////                    beforeData[0] = sensorEvent.values[2].absoluteValue
+////                    return beforeData[0]!! > sensorEvent.values[2].absoluteValue
+////                }else {
+////                    return false
+////                }
+                return true
+            }
+            ExerciseType.CHIN_UP.ordinal -> {
+                return true
+            }
+            ExerciseType.SIT_UP.ordinal -> {
+                return true
+            }
+            ExerciseType.PLANK.ordinal -> {
+                return true
+            }
+            else -> return true
+        }
+    }
+
     private fun startRest(cause: String) {
-        //마지막 세트의 경우 휴식 x
-        if (isActiveCurrentGoal(GoalsSettingType.SETS.ordinal)
-            && (currentSets.get() ?: GoalsSettingType.DEFAULT_VALUE).toInt()+1 < getCurrentGoalValue(GoalsSettingType.SETS.ordinal).toInt()){
+        Log.d(TAG, "startRest: $cause")
+        //조건: 수동으로 휴식 클릭 시(cause == TIME_REST)
+        //또는 세트 목표 활성화 && 마지막 세트가 아닐 경우(마지막 세트의 경우 휴식 다이얼로그 x)
+        if (cause == GoalsSettingType.TIME_REST.name
+            || isActiveCurrentGoal(GoalsSettingType.SETS.ordinal) && (currentSets.get() ?: GoalsSettingType.DEFAULT_VALUE).toInt()+1 < getCurrentGoalValue(GoalsSettingType.SETS.ordinal).toInt()){
             showRestTimerAlert.set(true)
         }
 
@@ -333,27 +380,29 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
     }
 
     private fun getLogDetail(logStart: ExerciseLogStart, cause: String): String {
+        val context = getApplication<Application>().applicationContext
+
         //플랭크의 경우
         if (logStart.eId == ExerciseType.PLANK.ordinal){
             if (cause == GoalsSettingType.TIME_LIMIT_PER_SET.name
                 && isActiveCurrentGoal(GoalsSettingType.TIME_LIMIT_PER_SET.ordinal))
-                    return LogStatus.SUCCESS.name
+                    return context.getString(LogStatus.SUCCESS.strRes)
             else if(cause == GoalsSettingType.TIME_REST.name
                 && isActiveCurrentGoal(GoalsSettingType.TIME_LIMIT_PER_SET.ordinal))
-                    return LogStatus.EARLY_FINISH.name
+                    return context.getString(LogStatus.EARLY_FINISH.strRes)
             else
-                return LogStatus.MANUALLY_FINISH.name
+                return context.getString(LogStatus.MANUALLY_FINISH.strRes)
         }else{
 
             //플랭크 외 운동일 경우
-            if (cause == GoalsSettingType.REPS.name) return LogStatus.SUCCESS.name
-            else if(cause == GoalsSettingType.TIME_LIMIT_PER_SET.name) return LogStatus.TIME_OVER.name
+            if (cause == GoalsSettingType.REPS.name) return context.getString(LogStatus.SUCCESS.strRes)
+            else if(cause == GoalsSettingType.TIME_LIMIT_PER_SET.name) return context.getString(LogStatus.TIME_OVER.strRes)
             else if (cause == GoalsSettingType.TIME_REST.name
                 && (isActiveCurrentGoal(GoalsSettingType.TIME_LIMIT_PER_SET.ordinal)
                         || isActiveCurrentGoal(GoalsSettingType.REPS.ordinal)))
-                            return LogStatus.EARLY_FINISH.name
+                            return context.getString(LogStatus.EARLY_FINISH.strRes)
             else
-                return LogStatus.MANUALLY_FINISH.name
+                return context.getString(LogStatus.MANUALLY_FINISH.strRes)
         }
     }
 
@@ -367,7 +416,7 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
             currentReps.set("${it.toInt() + 1}")
 
             //알림음
-            if (isRingIcon.get()) soundUtils.noti.onNext(Unit)
+            if (isRingOn.get()) soundUtils.noti.onNext(SoundEffectUtils.TYPE_COUNT)
         }
     }
 
@@ -398,6 +447,7 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
 
     private fun exerciseEnd(){
         resetData(true)
+        startTimer(false)
         goCompleteFragment.set(true)
     }
 
@@ -441,6 +491,6 @@ class ExerciseViewModel(app: Application): AndroidViewModel(app) {
     }
 
     fun btnRingClick(){
-        isRingIcon.set(isRingIcon.get().not())
+        isRingOn.set(isRingOn.get().not())
     }
 }

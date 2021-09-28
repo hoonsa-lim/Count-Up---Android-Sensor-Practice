@@ -3,11 +3,13 @@ package com.myohoon.hometrainingautocounter.view.adapter
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.databinding.ObservableField
 import androidx.recyclerview.widget.RecyclerView
 import com.myohoon.hometrainingautocounter.R
 import com.myohoon.hometrainingautocounter.databinding.ItemExerciseBinding
 import com.myohoon.hometrainingautocounter.repository.entity.ExerciseEntity
+import com.myohoon.hometrainingautocounter.repository.enums.ExerciseType
 import com.myohoon.hometrainingautocounter.repository.model.Alert
 import com.myohoon.hometrainingautocounter.utils.AlertUtils
 import com.myohoon.hometrainingautocounter.utils.ResUtils
@@ -47,11 +49,22 @@ class ExerciseAdapter(
             val position = this.adapterPosition +1
             binding.num = if (position <= 10) "0$position" else position.toString()
 
+            //팔굽혀펴기 외 준비중 처리
+            if (this.adapterPosition == ExerciseType.PUSH_UP.ordinal){
+                binding.clExerciseItem.alpha = 1.0f
+            }
+
             //운동 제목
             binding.title = ResUtils.getResExerciseName(item.eId)
 
             //event
             binding.clExerciseItem.setOnClickListener {
+                //팔굽혀펴기 외 준비중 처리
+                if (this.adapterPosition != ExerciseType.PUSH_UP.ordinal){
+                    Toast.makeText(it.context, R.string.services_preparing, Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
                 if (item.isShowExplanation != null && !item.isShowExplanation.toBoolean())
                     addPageFragment(item)
                 else{
@@ -67,6 +80,12 @@ class ExerciseAdapter(
                 }
             }
             binding.ibExerciseInfo.setOnClickListener {
+                //팔굽혀펴기 외 준비중 처리
+                if (this.adapterPosition != ExerciseType.PUSH_UP.ordinal){
+                    Toast.makeText(it.context, R.string.services_preparing, Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
                 showAlertExerciseInfo(makeExerciseAlert(item, isOneBtn = true), it.context)
             }
         }
@@ -85,7 +104,7 @@ class ExerciseAdapter(
              val alert = Alert(
                  ResUtils.getResExerciseName(exercise.eId),
                  ResUtils.getResExerciseExplanation(exercise.eId),
-                 ResUtils.getResExerciseImg(exercise.eId),
+//                 ResUtils.getResExerciseImg(exercise.eId),
                 isOneButton = isOneBtn,
                 btnNegativeText = R.string.dont_show_again,
                 positiveEvent = f1, negativeEvent = f2,

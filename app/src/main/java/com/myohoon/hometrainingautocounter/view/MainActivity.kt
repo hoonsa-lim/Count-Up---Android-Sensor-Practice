@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import com.myohoon.hometrainingautocounter.BuildConfig
 import com.myohoon.hometrainingautocounter.R
 import com.myohoon.hometrainingautocounter.databinding.ActivityMainBinding
 import com.myohoon.hometrainingautocounter.repository.model.Alert
@@ -24,6 +25,7 @@ import com.myohoon.hometrainingautocounter.view.fragment.calender.CalenderFragme
 import com.myohoon.hometrainingautocounter.view.fragment.graph.GraphFragment
 import com.myohoon.hometrainingautocounter.view.fragment.main.CountFragment
 import com.myohoon.hometrainingautocounter.view.fragment.main.MainFragment
+import com.myohoon.hometrainingautocounter.view.fragment.main.ResultFragment
 import com.myohoon.hometrainingautocounter.view.fragment.ranking.RankingFragment
 import com.myohoon.hometrainingautocounter.view.fragment.setting.SettingFragment
 import com.myohoon.hometrainingautocounter.viewmodel.ExerciseViewModel
@@ -32,7 +34,7 @@ class MainActivity : AppCompatActivity() {
     companion object{
         const val TAG = "MainActivity"
 
-        private const val NUM_PAGES = 5         //하단 탭 수
+        private const val NUM_PAGES = BuildConfig.BottomTabNum         //하단 탭 수
 
         private var mainActivity: MainActivity? = null
 
@@ -63,18 +65,21 @@ class MainActivity : AppCompatActivity() {
 
         fun changeFragmentInMain(fragment: Fragment, backStack:String? = null, isAdd: Boolean = true) {
             mainActivity?.let {
+                val transaction = it.supportFragmentManager.beginTransaction()
                 if (isAdd){
-                    it.supportFragmentManager
-                        .beginTransaction()
-                        .add(R.id.mainFrame, fragment)
-                        .addToBackStack(backStack)
-                        .commit()
+                    if (backStack == null){
+                        transaction.add(R.id.mainFrame, fragment).commit()
+                    }else{
+                        transaction.add(R.id.mainFrame, fragment)
+                            .addToBackStack(backStack).commit()
+                    }
                 }else{
-                    it.supportFragmentManager
-                        .beginTransaction()
-                        .replace(R.id.mainFrame, fragment)
-                        .addToBackStack(backStack)
-                        .commit()
+                    if (backStack == null){
+                        transaction.replace(R.id.mainFrame, fragment).commit()
+                    }else{
+                        transaction.replace(R.id.mainFrame, fragment)
+                            .addToBackStack(backStack).commit()
+                    }
                 }
             }
         }
@@ -116,27 +121,32 @@ class MainActivity : AppCompatActivity() {
     private fun initTabLayout() {
         //아이콘 설정
         TabLayoutMediator(binding.tabLayout, binding.pager) { tab, position ->
-            when(position){
-                0 -> {
-                    tab.text = getString(R.string.calender)
-                    tab.icon = getDrawable(R.drawable.ic_baseline_today_24)
+            if (NUM_PAGES > 1){
+                when(position){
+                    0 -> {
+                        tab.text = getString(R.string.calender)
+                        tab.icon = getDrawable(R.drawable.ic_baseline_today_24)
+                    }
+                    1 -> {
+                        tab.text = getString(R.string.chart)
+                        tab.icon = getDrawable(R.drawable.ic_baseline_insert_chart_outlined_24)
+                    }
+                    2 -> {
+                        tab.text = getString(R.string.home)
+                        tab.icon = getDrawable(R.drawable.ic_baseline_home_24)
+                    }
+                    3 -> {
+                        tab.text = getString(R.string.ranking)
+                        tab.icon = getDrawable(R.drawable.ic_baseline_military_tech_24)
+                    }
+                    4 -> {
+                        tab.text = getString(R.string.setting)
+                        tab.icon = getDrawable(R.drawable.ic_baseline_settings_applications_24)
+                    }
                 }
-                1 -> {
-                    tab.text = getString(R.string.chart)
-                    tab.icon = getDrawable(R.drawable.ic_baseline_insert_chart_outlined_24)
-                }
-                2 -> {
-                    tab.text = getString(R.string.home)
-                    tab.icon = getDrawable(R.drawable.ic_baseline_home_24)
-                }
-                3 -> {
-                    tab.text = getString(R.string.ranking)
-                    tab.icon = getDrawable(R.drawable.ic_baseline_military_tech_24)
-                }
-                4 -> {
-                    tab.text = getString(R.string.setting)
-                    tab.icon = getDrawable(R.drawable.ic_baseline_settings_applications_24)
-                }
+            }else{
+                tab.text = getString(R.string.home)
+                tab.icon = getDrawable(R.drawable.ic_baseline_home_24)
             }
         }.attach()
 
@@ -149,7 +159,12 @@ class MainActivity : AppCompatActivity() {
                 tab.icon?.setTint(ContextCompat.getColor(this@MainActivity, R.color.blue_200))
             }
         })
-        binding.tabLayout.getTabAt(2)?.select()
+        binding.tabLayout.getTabAt(if (NUM_PAGES > 1) 2 else 0)?.select()
+
+        //TODO release mode ==> tab invisible
+        if (!BuildConfig.DEBUG){
+            binding.tabLayout.visibility = View.GONE
+        }
     }
 
     override fun onBackPressed() {
@@ -160,7 +175,7 @@ class MainActivity : AppCompatActivity() {
                 name = it::class.java.simpleName
             }
 
-        Log.d(TAG, "onBackPressed: count == $count")
+        Log.d(TAG, "onBackPressed: count == $count, ${supportFragmentManager.fragments}")
         Log.d(TAG, "onBackPressed: name == $name")
 
         when(name){
@@ -180,10 +195,13 @@ class MainActivity : AppCompatActivity() {
                     R.string.exercise_end, R.string.exercise_end_desc, btnPositiveText = R.string.quit,
                     positiveEvent = {
                         exerciseVM.exerciseQuit.onNext(Unit)
-                        super.onBackPressed()
                     }
                 )
                 AlertUtils.instance().show(this@MainActivity, alert)
+            }
+            ResultFragment.TAG -> {
+                val last = supportFragmentManager.fragments.last()
+                supportFragmentManager.beginTransaction().remove(last).commit()
             }
             else -> super.onBackPressed()
         }
@@ -193,13 +211,17 @@ class MainActivity : AppCompatActivity() {
         override fun getItemCount(): Int = NUM_PAGES
 
         override fun createFragment(position: Int): Fragment {
-            return when(position){
-                0 -> CalenderFragment()
-                1 -> GraphFragment()
-                2 -> MainFragment()
-                3 -> RankingFragment()
-                4 -> SettingFragment()
-                else -> MainFragment()
+            if (NUM_PAGES > 1){
+                return when(position){
+                    0 -> CalenderFragment()
+                    1 -> GraphFragment()
+                    2 -> MainFragment()
+                    3 -> RankingFragment()
+                    4 -> SettingFragment()
+                    else -> MainFragment()
+                }
+            }else{
+                return MainFragment()
             }
         }
     }

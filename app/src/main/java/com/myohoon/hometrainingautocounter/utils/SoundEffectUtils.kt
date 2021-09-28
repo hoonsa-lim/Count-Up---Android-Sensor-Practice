@@ -1,4 +1,4 @@
-package com.myohoon.hometrainingautocounter.utils
+ package com.myohoon.hometrainingautocounter.utils
 
 import android.app.Application
 import android.content.Context
@@ -78,7 +78,10 @@ class SoundEffectUtils(val app: Application) {
                     ringTone = RingtoneManager.getRingtone(app, uri)
                 }
 
-                ringTone?.let { it.play() }
+                ringTone?.let {
+                    it.stop()       //이전에 발생한 효과음이 끝나기 전에 실행 됐을 때는 종료하고 시작해줘야함.
+                    it.play()
+                }
             }
         }
     }

@@ -29,4 +29,8 @@
     //alpha
     <dimen name="alpha_100">1.0</dimen>
     <dimen name="alpha_40">0.4</dimen>
+    <dimen name="corner_basic">40dp</dimen>
+    <dimen name="switch_ring">20dp</dimen>
+    <dimen name="switch_ring_height">40dp</dimen>
+    <dimen name="switch_thumb_ring_padding">1dp</dimen>
 </resources>

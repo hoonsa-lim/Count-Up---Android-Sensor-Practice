@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.databinding.Observable
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.myohoon.hometrainingautocounter.R
 import com.myohoon.hometrainingautocounter.databinding.FragmentGoalsSettingBinding
@@ -63,9 +64,12 @@ class GoalsSettingFragment : Fragment() {
     }
 
     private fun initListAdapter() {
-        //운동 목록 초기화
-        goalsAdapter = GoalsSettingAdapter(exerciseVM.currentGoals, exerciseVM)
-        binding.rcvGoalsSetting.adapter = goalsAdapter
+        context?.let {
+            //운동 목록 초기화
+            binding.rcvGoalsSetting.layoutManager = GridLayoutManager(it,2)
+            goalsAdapter = GoalsSettingAdapter(exerciseVM.currentGoals, exerciseVM)
+            binding.rcvGoalsSetting.adapter = goalsAdapter
+        }
     }
 
     private fun initObservableCallback() {

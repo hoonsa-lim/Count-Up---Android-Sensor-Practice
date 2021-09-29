@@ -33,4 +33,5 @@
     <dimen name="switch_ring">20dp</dimen>
     <dimen name="switch_ring_height">40dp</dimen>
     <dimen name="switch_thumb_ring_padding">1dp</dimen>
+    <dimen name="margin_short">8dp</dimen>
 </resources>

@@ -29,10 +29,26 @@
             android:layout_marginTop="@dimen/title_margin_bottom"
             android:overScrollMode="never"
             android:scrollbars="vertical"
+            android:layout_marginBottom="@dimen/margin_short"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/adView"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView3" />
+
+        <com.google.android.gms.ads.AdView
+            android:id="@+id/adView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="@dimen/margin_short"
+            app:adSize="BANNER"
+            app:adUnitId="ca-app-pub-3985919514974373/7084198461"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+        </com.google.android.gms.ads.AdView>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

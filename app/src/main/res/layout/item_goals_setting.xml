@@ -28,13 +28,15 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="@dimen/item_margin"
-                android:layout_marginTop="@dimen/item_margin"
+                android:layout_marginVertical="@dimen/margin_short"
+                android:gravity="center"
                 android:maxLines="2"
                 android:textSize="@dimen/body0"
                 android:textStyle="bold"
+                card_view:layout_constraintBottom_toTopOf="@+id/tvItemNum"
                 card_view:layout_constraintEnd_toStartOf="@+id/ibInfo"
-                card_view:layout_constraintStart_toEndOf="@+id/cbItemActive"
-                card_view:layout_constraintTop_toTopOf="parent"
+                card_view:layout_constraintStart_toStartOf="parent"
+                card_view:layout_constraintTop_toBottomOf="@+id/cbItemActive"
                 tools:text="세트 당 횟수" />
 
             <ImageButton
@@ -53,11 +55,11 @@
                 android:id="@+id/cbItemActive"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/item_margin"
+                android:background="@android:color/transparent"
                 android:buttonTint="@color/blue_200"
                 android:clickable="false"
-                android:background="@android:color/transparent"
-                card_view:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginTop="@dimen/margin_short"
+                card_view:layout_constraintEnd_toEndOf="parent"
                 card_view:layout_constraintStart_toStartOf="parent"
                 card_view:layout_constraintTop_toTopOf="parent" />
 
@@ -65,17 +67,17 @@
                 android:id="@+id/tvItemNum"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/item_margin"
-                android:layout_marginBottom="@dimen/item_margin"
+                android:layout_marginVertical="@dimen/margin_short"
                 android:background="@drawable/background_round_border_white"
+                android:gravity="center"
                 android:paddingHorizontal="@dimen/item_margin"
                 android:paddingVertical="5dp"
                 android:textColor="@color/blue_200"
                 android:textSize="@dimen/buttonText"
                 android:textStyle="bold"
                 card_view:layout_constraintBottom_toBottomOf="parent"
+                card_view:layout_constraintEnd_toEndOf="@+id/tvItemTitle"
                 card_view:layout_constraintStart_toStartOf="@+id/tvItemTitle"
-                card_view:layout_constraintTop_toBottomOf="@+id/tvItemTitle"
                 tools:text="20 회" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>

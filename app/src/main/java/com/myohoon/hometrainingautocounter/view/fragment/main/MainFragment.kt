@@ -10,6 +10,7 @@ import androidx.databinding.Observable
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.gms.ads.AdRequest
 import com.myohoon.hometrainingautocounter.R
 import com.myohoon.hometrainingautocounter.databinding.FragmentMainBinding
 import com.myohoon.hometrainingautocounter.view.MainActivity
@@ -41,9 +42,14 @@ class MainFragment : Fragment() {
     ): View? {
         _binding = FragmentMainBinding.inflate(inflater, container, false)
 
+        initAD()
         initListAdapter()       //운동 목록 초기화
         initObservableCallback()
         return binding.root
+    }
+
+    private fun initAD() {
+        binding.adView.loadAd(AdRequest.Builder().build())
     }
 
     private fun initObservableCallback() {

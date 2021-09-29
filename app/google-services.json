@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "181795059761",
+    "project_id": "countup-9abaa",
+    "storage_bucket": "countup-9abaa.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:181795059761:android:148544a2ff8d44f88ffd10",
+        "android_client_info": {
+          "package_name": "com.myohoon.hometrainingautocounter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "181795059761-s620pj5gfqhet8814mci05abo00ubrf3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.myohoon.hometrainingautocounter",
+            "certificate_hash": "999582c07ec600737e3b53e48f78872492a47a6f"
+          }
+        },
+        {
+          "client_id": "181795059761-g587i71ro5k6325k9ual1v4ii68ostmn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuWjUNaog7YbHf6oZZXhEQDfHxOwg0Im0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "181795059761-g587i71ro5k6325k9ual1v4ii68ostmn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      },
+      "admob_app_id": "ca-app-pub-3985919514974373~5000621296"
+    }
+  ],
+  "configuration_version": "1"
+}

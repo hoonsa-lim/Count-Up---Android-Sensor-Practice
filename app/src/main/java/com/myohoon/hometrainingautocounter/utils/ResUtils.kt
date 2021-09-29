@@ -20,11 +20,11 @@ class ResUtils {
         //운동 설명
         fun getResExerciseImg(eId: Int): Int {
             return when(eId){
-                0 -> R.drawable.test
-                1 -> R.drawable.test
-                2 -> R.drawable.test
-                3 -> R.drawable.test
-                4 -> R.drawable.test
+                0 -> R.drawable.img_count_up_text
+                1 -> R.drawable.img_count_up_text
+                2 -> R.drawable.img_count_up_text
+                3 -> R.drawable.img_count_up_text
+                4 -> R.drawable.img_count_up_text
                 else -> R.string.unknown
             }
         }

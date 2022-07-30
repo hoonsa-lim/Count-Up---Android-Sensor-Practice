@@ -44,7 +44,7 @@
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="@dimen/margin_short"
             app:adSize="BANNER"
-            app:adUnitId="ca-app-pub-3985919514974373/7084198461"
+            app:adUnitId="@string/admob_banner_unit_id"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">

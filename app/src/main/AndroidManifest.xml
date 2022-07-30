@@ -5,7 +5,6 @@
     <!--  진동  -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
-
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -29,6 +28,6 @@
         <!--   admob   -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3985919514974373~5000621296"/>
+            android:value="@string/admob_app_id"/>
     </application>
 </manifest>

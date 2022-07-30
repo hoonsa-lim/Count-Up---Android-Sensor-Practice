@@ -5,22 +5,25 @@ plugins {
     id 'com.google.gms.google-services'
 }
 
+def Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
 android {
     signingConfigs {
         release {
-            storeFile file('/Users/elecvery/Documents/hslim/MyData/sub_project/0_AppKey/HsKeyStore')
-            storePassword 'gnstk6958'
-            keyPassword 'gnstk6958'
-            keyAlias 'hoonsa'
+            storeFile file(properties.getProperty("key.store.path"))
+            storePassword properties.getProperty("key.store.password")
+            keyPassword properties.getProperty("key.password")
+            keyAlias properties.getProperty("key.alias")
         }
     }
-    compileSdkVersion 30
+    compileSdkVersion 31
     buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "com.myohoon.hometrainingautocounter"
         minSdkVersion 23
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 3
         versionName "1.0.2"
 
@@ -73,7 +76,7 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
 
     //db room
-    def room_version = "2.3.0"
+    def room_version = "2.4.0"
     implementation("androidx.room:room-runtime:$room_version")
     annotationProcessor "androidx.room:room-compiler:$room_version"
     kapt("androidx.room:room-compiler:$room_version")

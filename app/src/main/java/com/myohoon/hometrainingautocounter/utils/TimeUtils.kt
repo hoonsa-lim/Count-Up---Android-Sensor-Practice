@@ -1,23 +1,12 @@
 package com.myohoon.hometrainingautocounter.utils
 
 import android.content.Context
-import android.os.Build
 import android.util.Log
-import android.util.TimeUtils
 import androidx.core.os.ConfigurationCompat
-import io.reactivex.Observable
-import io.reactivex.subjects.PublishSubject
-import java.lang.Exception
 import java.sql.Date
-import java.sql.Timestamp
 import java.text.SimpleDateFormat
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.*
-import java.util.concurrent.TimeUnit
+import kotlin.Exception
 
 
 class TimeUtils {
@@ -71,7 +60,11 @@ class TimeUtils {
         }
 
         fun getCurrentLocale(context: Context): Locale{
-            return ConfigurationCompat.getLocales(context.resources.configuration)[0]
+            return try {
+                ConfigurationCompat.getLocales(context.resources.configuration)[0] ?: throw IllegalStateException("locale not found")
+            }catch (e: Exception){
+                Locale.getDefault()
+            }
         }
 
         fun currentFormatTime(context: Context): String{

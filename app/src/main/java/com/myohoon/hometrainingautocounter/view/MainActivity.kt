@@ -93,7 +93,7 @@ class MainActivity : AppCompatActivity() {
     //viewModel
     private val exerciseVM by viewModels<ExerciseViewModel>{
         object : ViewModelProvider.Factory {
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return ExerciseViewModel(application) as T
             }
         }
